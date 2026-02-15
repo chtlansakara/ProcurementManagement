@@ -10,6 +10,8 @@ import com.cht.procurementManagement.repositories.DesignationRepository;
 import com.cht.procurementManagement.repositories.SubdivRepository;
 import com.cht.procurementManagement.repositories.UserRepository;
 import jakarta.annotation.PostConstruct;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -80,6 +82,16 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public boolean hasUserWithEmail(String email) {
         return userRepository.findFirstByEmail(email).isPresent();
+    }
+
+    @Override
+    public UserDto getLoggedUserDto() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        //get user from database
+        User user = userRepository.findFirstByEmail(email)
+                .orElseThrow( () -> new RuntimeException("Logged user not found."));
+        return user.getUserDto();
     }
 
     private UserRole mapStringToUserRole(String userRole){

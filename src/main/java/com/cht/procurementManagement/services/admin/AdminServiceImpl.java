@@ -60,6 +60,7 @@ public class AdminServiceImpl implements AdminService {
             throw new EntityExistsException("Email already exists");
         }
 
+
         //finding its sub div
         Optional<Subdiv> optionalSubdiv = subdivRepository.findById(userDto.getSubdivId());
         //finding its admin div

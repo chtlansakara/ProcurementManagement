@@ -7,4 +7,6 @@ import com.cht.procurementManagement.entities.User;
 public interface AuthService {
     UserDto signupUser(SignupRequest signupRequest);
     boolean hasUserWithEmail(String email);
+
+    UserDto getLoggedUserDto();
 }

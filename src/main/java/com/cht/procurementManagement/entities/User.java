@@ -25,12 +25,15 @@ public class User implements UserDetails {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
     private String password;
+
     private String employeeId;
     private String nic;
     private Date birthdate;
 
     private String telephone;
+
     //user role from enum
+    @Enumerated(EnumType.STRING)
     private UserRole userRole;
 
     //related objects
