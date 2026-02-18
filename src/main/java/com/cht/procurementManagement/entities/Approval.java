@@ -19,7 +19,7 @@ public class Approval {
     private Integer planNo;
     private String comment;
     private String fund;
-    private String authroizedBy;
+    private String authorizedBy;
     private Date approvedDate;
     private Date createdDate;
     @Enumerated(EnumType.STRING)
@@ -42,7 +42,7 @@ public class Approval {
         approvalDto.setPlanNo(planNo);
         approvalDto.setComment(comment);
         approvalDto.setFund(fund);
-        approvalDto.setAuthroizedBy(authroizedBy);
+        approvalDto.setAuthorizedBy(authorizedBy);
         approvalDto.setApprovedDate(approvedDate);
         approvalDto.setCreatedDate(createdDate);
         approvalDto.setType(type);
@@ -52,6 +52,11 @@ public class Approval {
             approvalDto.setCreatedByUserEmail(createdBy.getEmail());
             approvalDto.setCreatedbyUsername(createdBy.getName());
             approvalDto.setCreatedByUserEmployeeId(createdBy.getEmployeeId());
+            approvalDto.setUserRoleCreatedBy(createdBy.getUserRole());
+            approvalDto.setSubdivCreatedBy(createdBy.getSubdiv().getName());
+            approvalDto.setSubdivCodeCreatedBy(createdBy.getSubdiv().getCode());
+            approvalDto.setAdmindivCreatedBy(createdBy.getAdmindiv().getName());
+            approvalDto.setAdmindivCodeCreatedBy(createdBy.getAdmindiv().getCode());
         }
         //request details
         if(request!= null){
@@ -128,11 +133,11 @@ public class Approval {
     }
 
     public String getAuthroizedBy() {
-        return authroizedBy;
+        return authorizedBy;
     }
 
     public void setAuthroizedBy(String authroizedBy) {
-        this.authroizedBy = authroizedBy;
+        this.authorizedBy = authroizedBy;
     }
 
     public Date getApprovedDate() {

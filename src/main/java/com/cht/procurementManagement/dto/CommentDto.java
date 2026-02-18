@@ -3,6 +3,7 @@ package com.cht.procurementManagement.dto;
 import com.cht.procurementManagement.entities.Request;
 import com.cht.procurementManagement.entities.User;
 import com.cht.procurementManagement.enums.ReviewType;
+import com.cht.procurementManagement.enums.UserRole;
 import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -23,6 +24,13 @@ public class CommentDto {
     private String createdbyUsername;
     private String createdByUserEmployeeId;
 
+    private UserRole userRoleCreatedBy;
+    private String subdivCreatedBy;
+    private String subdivCodeCreatedBy;
+    private String admindivCreatedBy;
+    private String admindivCodeCreatedBy;
+
+
     //for request
     private Long requestId;
     private String requestTitle;
@@ -32,6 +40,46 @@ public class CommentDto {
 
 
     //get-set methods
+
+    public UserRole getUserRoleCreatedBy() {
+        return userRoleCreatedBy;
+    }
+
+    public void setUserRoleCreatedBy(UserRole userRoleCreatedBy) {
+        this.userRoleCreatedBy = userRoleCreatedBy;
+    }
+
+    public String getSubdivCreatedBy() {
+        return subdivCreatedBy;
+    }
+
+    public void setSubdivCreatedBy(String subdivCreatedBy) {
+        this.subdivCreatedBy = subdivCreatedBy;
+    }
+
+    public String getSubdivCodeCreatedBy() {
+        return subdivCodeCreatedBy;
+    }
+
+    public void setSubdivCodeCreatedBy(String subdivCodeCreatedBy) {
+        this.subdivCodeCreatedBy = subdivCodeCreatedBy;
+    }
+
+    public String getAdmindivCreatedBy() {
+        return admindivCreatedBy;
+    }
+
+    public void setAdmindivCreatedBy(String admindivCreatedBy) {
+        this.admindivCreatedBy = admindivCreatedBy;
+    }
+
+    public String getAdmindivCodeCreatedBy() {
+        return admindivCodeCreatedBy;
+    }
+
+    public void setAdmindivCodeCreatedBy(String admindivCodeCreatedBy) {
+        this.admindivCodeCreatedBy = admindivCodeCreatedBy;
+    }
 
     public Long getId() {
         return id;

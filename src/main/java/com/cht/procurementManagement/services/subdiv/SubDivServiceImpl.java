@@ -3,7 +3,9 @@ package com.cht.procurementManagement.services.subdiv;
 import com.cht.procurementManagement.dto.*;
 import com.cht.procurementManagement.entities.Request;
 import com.cht.procurementManagement.entities.Subdiv;
+import com.cht.procurementManagement.entities.User;
 import com.cht.procurementManagement.enums.RequestStatus;
+import com.cht.procurementManagement.enums.UserRole;
 import com.cht.procurementManagement.repositories.AdmindivRepository;
 import com.cht.procurementManagement.repositories.RequestRepository;
 import com.cht.procurementManagement.repositories.SubdivRepository;
@@ -17,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 @Service
@@ -59,9 +63,9 @@ public class SubDivServiceImpl implements SubDivService {
         Long subdivIdOfUser = getSubdivIdofLoggedUser();
         //creating a list for sub div ids with the sub div id - need to pass as a List
         List<Long> subdivList = List.of(subdivIdOfUser);
-        //update the requestDto with subdiv List
+        //1. update the requestDto with subdiv List
         requestDto.setSubdivIdList(subdivList);
-        //set the status of requestDto
+        //2. set the status of requestDto
         requestDto.setStatus(RequestStatus.PENDING_ADMIN_APPROVAL);
         //create request through request service - sets the user createdBy and created Date
         return requestService.createRequest(requestDto);
@@ -76,6 +80,7 @@ public class SubDivServiceImpl implements SubDivService {
         //getting sub div id of the user logged in
         return  requestRepository.findAllRequestsOnlyBySubdivId(getSubdivIdofLoggedUser())
                 .stream()
+                .sorted(Comparator.comparing(Request::getId).reversed())
                 .map(Request::getRequestDto)
                 .collect(Collectors.toList());
     }
@@ -84,11 +89,11 @@ public class SubDivServiceImpl implements SubDivService {
     //get request by id
     @Override
     public RequestDto getRequestById(Long id) {
-        return requestRepository.findById(id)
-                .map(Request::getRequestDto)
-                .orElseThrow(() -> new EntityNotFoundException("Request is not found"));
+        //validate as sub-div request & return as dto
+       return validateAsSubdivRequest(id).getRequestDto();
     }
 
+    //get sub-div dto of the logged user
     @Override
     public SubdivDto getSubdiv() {
         return subdivRepository.findById(getSubdivIdofLoggedUser())
@@ -98,100 +103,43 @@ public class SubDivServiceImpl implements SubDivService {
 
     @Override
     public List<CommentDto> getCommentsByRequestId(Long id) {
-        //getting user's sub-div details from logged details - using class method
-        Long subdivIdOfUser = getSubdivIdofLoggedUser();
 
-        //find the Request object from db
-        Request request = requestRepository.findById(id)
-                .orElseThrow( () -> new RuntimeException("Request not found"));
-
-        //the sub div list of the request
-        List<Subdiv> requestSubdivList = request.getSubdivList();
-
-        //check size and id of the subdiv
-        if(requestSubdivList.size() ==1 && requestSubdivList.get(0).getId().equals(subdivIdOfUser)){
-            return commentService.getCommentsByRequestId(id);
-        }else{
-            throw new RuntimeException("Request has more sub-divisions.");
-        }
-
+        Request request = validateAsSubdivRequest(id);
+        return commentService.getCommentsByRequestId(id);
 
     }
 
     @Override
     public List<ApprovalDto> getApprovalsByRequestId(Long id){
 
-        //getting user's sub-div details from logged details - using class method
-        Long subdivIdOfUser = getSubdivIdofLoggedUser();
-
-        //find the Request object from db
-        Request request = requestRepository.findById(id)
-                .orElseThrow( () -> new RuntimeException("Request not found"));
-
-        //the sub div list of the request
-        List<Subdiv> requestSubdivList = request.getSubdivList();
-
-        //check size and id of the subdiv
-        if(requestSubdivList.size() ==1 && requestSubdivList.get(0).getId().equals(subdivIdOfUser)){
-            return approvalService.getApprovalsByRequestId(id);
-        }else{
-            throw new RuntimeException("Request has more sub-divisions.");
-        }
+        Request request = validateAsSubdivRequest(id);
+        return approvalService.getApprovalsByRequestId(id);
     }
 
     @Override
     public void deleteRequestById(Long id) {
-        //getting user's sub-div details from logged details - using class method
-        Long subdivIdOfUser = getSubdivIdofLoggedUser();
-
-        //find the Request object from db
-        Request request = requestRepository.findById(id)
-                .orElseThrow( () -> new RuntimeException("Request not found"));
-
-        //check for correct status
-        if(request.getStatus() != RequestStatus.PENDING_ADMIN_APPROVAL){
-            throw new RuntimeException("Status is not valid for deletion");
-        }
-
-        //the sub div list of the request
-        List<Subdiv> requestSubdivList = request.getSubdivList();
-        //check size and id of the subdiv
-        if(requestSubdivList.size() ==1 && requestSubdivList.get(0).getId().equals(subdivIdOfUser)){
-            requestService.deleteRequest(id);
-        }else{
-            throw new RuntimeException("Request has more sub-divisions.");
-        }
+        //1. Check authorization for the request for sub-div user - using class method
+        Request existingRequest = validateRequestUpdateDeleteForSubdivUser(id);
+        //2. Delete using request servie
+        requestService.deleteRequest(existingRequest);
     }
 
+    @Transactional
     @Override
     public RequestDto updateRequestById(Long id, RequestDto requestDto) {
 
-        //find the Request object from db
-        Request request = requestRepository.findById(id)
-                .orElseThrow( () -> new RuntimeException("Request not found"));
+        //1. Check authorization for the request for sub-div user - using class method
+        Request existingRequest = validateRequestUpdateDeleteForSubdivUser(id);
 
-        //check for correct status
-        if(request.getStatus() != RequestStatus.PENDING_ADMIN_APPROVAL){
-            throw new RuntimeException("Status is not valid for deletion");
-        }
-
+        //2. set sub div list of the request dto -- as user's
         //getting user's sub-div details from logged details - using class method
         Long subdivIdOfUser = getSubdivIdofLoggedUser();
-        //creating a list for sub div ids with the sub div id - need to pass as a List
-        List<Long> subdivList = List.of(subdivIdOfUser);
-        //update the requestDto with subdiv List
-        requestDto.setSubdivIdList(subdivList);
+        requestDto.setSubdivIdList(List.of(subdivIdOfUser));
 
-        //the sub div list of the request
-        List<Subdiv> requestSubdivList = request.getSubdivList();
-        //check size and id of the subdiv
-        if(requestSubdivList.size() ==1 && requestSubdivList.get(0).getId().equals(subdivIdOfUser)){
-            //set the status of requestDto
-            requestDto.setStatus(RequestStatus.PENDING_ADMIN_APPROVAL);
-            return requestService.updateRequest(id, requestDto);
-        }else{
-            throw new RuntimeException("Request has more sub-divisions.");
-        }
+        //3. set status of dto:
+        requestDto.setStatus(RequestStatus.PENDING_ADMIN_APPROVAL);
+
+        return requestService.updateRequest(existingRequest, requestDto);
     }
 
 
@@ -206,6 +154,7 @@ public class SubDivServiceImpl implements SubDivService {
                 .collect(Collectors.toList());
     }
 
+
     //class method to get sub div id from the logged user details
     private Long getSubdivIdofLoggedUser(){
         //getting sub-div id from the logged details
@@ -214,6 +163,66 @@ public class SubDivServiceImpl implements SubDivService {
         return  subdivIdOfUser;
     }
 
+    //authorization - validate method for update and delete a request by a sub-div user
+    private Request validateRequestUpdateDeleteForSubdivUser(Long requestId){
+        //find the request of object
+        Request request = requestRepository.findById(requestId)
+                .orElseThrow( () -> new RuntimeException("Request not found"));
 
+        //get sub-div list of request
+        List<Subdiv> requestSubdivList =  request.getSubdivList();
+
+        //get logged user id
+        Long subdivIdOfUser = getSubdivIdofLoggedUser();
+
+        //1. check for single sub-div in the list
+        if(requestSubdivList == null || requestSubdivList.size() != 1){
+            throw new RuntimeException("Request has more than one sub-division");
+        }
+
+        //2. check if it's the user's sub-division
+        if(!requestSubdivList.get(0).getId().equals(subdivIdOfUser)){
+            throw new RuntimeException("Not authorized to access other sub-division's requests");
+        }
+
+        //3. check for status
+        if(!RequestStatus.PENDING_ADMIN_APPROVAL.equals(request.getStatus())){
+            throw new RuntimeException("Not allowed to update/delete due to current status of request");
+        }
+
+        //4. check user role
+        if(!UserRole.SUBDIVUSER.equals(request.getCreatedBy().getUserRole())){
+            throw new RuntimeException("Request is not created by the sub-division");
+        }
+
+        return request;
+
+    }
+
+    //check sub-div requests
+    private Request validateAsSubdivRequest(Long requestId){
+        //find the request object
+        Request request = requestRepository.findById(requestId)
+                .orElseThrow( () -> new RuntimeException("Request not found"));
+
+        //get sub-div list of request
+        List<Subdiv> requestSubdivList =  request.getSubdivList();
+
+        //get logged user id
+        Long subdivIdOfUser = getSubdivIdofLoggedUser();
+
+        //1. check for single sub-div in the list
+        if(requestSubdivList == null || requestSubdivList.size() != 1){
+            throw new RuntimeException("Request has more than one sub-division");
+        }
+
+        //2. check if it's the user's sub-division
+        if(!requestSubdivList.get(0).getId().equals(subdivIdOfUser)){
+            throw new RuntimeException("Not authorized to access other sub-division's requests");
+        }
+
+        return request;
+
+    }
 
 }

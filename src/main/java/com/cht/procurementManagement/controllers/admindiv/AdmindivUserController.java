@@ -35,6 +35,16 @@ public class AdmindivUserController {
         }
     }
 
+    //get request by id
+    @GetMapping("/requests/{id}")
+    public ResponseEntity<?> getRequestById(@PathVariable Long id){
+        try{
+            return ResponseEntity.ok(adminDivService.getRequestByRequestId(id));
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     //get all RELATED admin div requests
     @GetMapping("/requests/related")
     public ResponseEntity<?> getRelatedRequestsByAdmindiv(){
@@ -54,6 +64,28 @@ public class AdmindivUserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    //get requests approved by admin div
+    @GetMapping("/requests/approved")
+    public ResponseEntity<?> getApprovedRequestsByAdmindiv(){
+        try{
+            return ResponseEntity.ok(adminDivService.getRequestsApprovedByAdmindiv());
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //get requests rejected by admin div
+    @GetMapping("/requests/rejected")
+    public ResponseEntity<?> getRejectedRequestsByAdmindiv(){
+        try{
+            return ResponseEntity.ok(adminDivService.getRequestsRejectedByAdmindiv());
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+
 
     //create request by admin div
     @PostMapping("/requests")
@@ -88,5 +120,55 @@ public class AdmindivUserController {
     }
 
 
+    //get subdiv list
+    @GetMapping("subdivs")
+    public ResponseEntity<?> getSubdivList(){
+        try{
+            return ResponseEntity.ok(adminDivService.getSubdivList());
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 
+    //get comments list
+    @GetMapping("requests/comments/{id}")
+    public ResponseEntity<?> getCommentsByRequestId(@PathVariable Long id){
+        try {
+            return ResponseEntity.ok(adminDivService.getCommentsByRequestId(id));
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+
+    //get approvals list
+    @GetMapping("requests/approvals/{id}")
+    public ResponseEntity<?> getApprovalsByRequestId(@PathVariable Long id){
+        try {
+            return ResponseEntity.ok(adminDivService.getApprovalsByRequestId(id));
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //update request
+    @PutMapping("/requests/{id}")
+    public ResponseEntity<?> updateRequestByRequestId(@PathVariable Long id, @RequestBody RequestDto requestDto){
+        RequestDto updatedRequestDto = adminDivService.updateRequestByRequestId(id, requestDto);
+        if(updatedRequestDto== null){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request couldn't be updated");
+        }
+        return ResponseEntity.ok(updatedRequestDto);
+    }
+
+    //delete request
+    @DeleteMapping("/requests/{id}")
+    public ResponseEntity<?> deleteRequest(@PathVariable Long id){
+        try {
+            adminDivService.deleteRequest(id);
+            return ResponseEntity.ok(null);
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 }

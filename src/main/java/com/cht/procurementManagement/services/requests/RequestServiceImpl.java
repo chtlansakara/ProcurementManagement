@@ -42,51 +42,54 @@ public class RequestServiceImpl implements  RequestService{
     //create request method with all options
     @Override
     public RequestDto createRequest(RequestDto requestDto) {
-
+    //set 'status' and 'subdivIdList' of dto before here
         //only the created user & created date is set here
-        //set the status & sub-div id list before sending here
 
+        //1. set 'createdBy' user -
         //finding the logged user id
         Long loggedUserId = authService.getLoggedUserDto().getId();
-
         //finding User object from db
         User userCreatedBy  = userRepository.findById(loggedUserId)
                 .orElseThrow( () -> new RuntimeException("User not found!"));
 
-            //finding the sub div objects list from db
-            List<Subdiv> subdivList = subdivRepository.findAllById(requestDto.getSubdivIdList());
+        //2. find subdiv objects from db
+        //finding the sub div objects list from db
+        List<Subdiv> subdivList = subdivRepository.findAllById(requestDto.getSubdivIdList());
 
-            //create a new request
-            Request request = new Request();
+        //3. create a new request
+        Request request = new Request();
 
-            request.setTitle(requestDto.getTitle());
-            request.setQuantity(requestDto.getQuantity());
-            request.setDescription(requestDto.getDescription());
-            request.setFund(requestDto.getFund());
-            request.setEstimation(requestDto.getEstimation());
-            //already have the status
-            request.setStatus(requestDto.getStatus());
-            request.setPreviouslyPurchased(requestDto.isPreviouslyPurchased());
-            request.setPreviousPurchaseYear(requestDto.getPreviousPurchaseYear());
-            request.setReasonForRequirement(requestDto.getReasonForRequirement());
-            request.setApprovedDate(requestDto.getApprovedDate());
-            request.setAuthorizedBy(requestDto.getAuthorizedBy());
-            //add current date as created date
-            request.setCreatedDate(new Date());
+        request.setTitle(requestDto.getTitle());
+        request.setQuantity(requestDto.getQuantity());
+        request.setDescription(requestDto.getDescription());
+        request.setFund(requestDto.getFund());
+        request.setEstimation(requestDto.getEstimation());
 
-            //setting objects User & Subdiv Object list
-            request.setCreatedBy(userCreatedBy);
-            request.setSubdivList(subdivList);
+        //should already have the status in dto
+        request.setStatus(requestDto.getStatus());
 
-            //save
-            Request savedRequest = requestRepository.save(request);
-            return savedRequest.getRequestDto();
+        request.setPreviouslyPurchased(requestDto.isPreviouslyPurchased());
+        request.setPreviousPurchaseYear(requestDto.getPreviousPurchaseYear());
+        request.setReasonForRequirement(requestDto.getReasonForRequirement());
+        request.setApprovedDate(requestDto.getApprovedDate());
+        request.setAuthorizedBy(requestDto.getAuthorizedBy());
+
+        //add current date as created date
+        request.setCreatedDate(new Date());
+
+        //setting objects - User & Subdiv Objects list
+        request.setCreatedBy(userCreatedBy);
+        request.setSubdivList(subdivList);
+
+        //save to db & return as dto
+        Request savedRequest = requestRepository.save(request);
+        return savedRequest.getRequestDto();
     }
 
     @Transactional
     @Override
     public RequestDto updateRequest(Long id, RequestDto requestDto) {
-      //check for correct sub div list & status before here
+      //check for correct sub div list & status in dto before here
 
        //check for request
         Optional<Request> optionalRequest = requestRepository.findById(id);
@@ -98,10 +101,15 @@ public class RequestServiceImpl implements  RequestService{
         User userUpdatedBy  = userRepository.findById(loggedUserId)
                 .orElseThrow( () -> new RuntimeException("User not found!"));
 
-        //finding the sub div objects list from db
-        List<Subdiv> subdivList = subdivRepository.findAllById(requestDto.getSubdivIdList());
+        //check if sub div is empty
+        if(requestDto.getSubdivIdList() == null || requestDto.getSubdivIdList().contains(null)){
+            throw new RuntimeException("Sub divisions list must not be empty or contain null values");
+        }
 
-        if(optionalRequest.isPresent() && !subdivList.isEmpty()){
+        //finding the sub div objects list from db
+            List<Subdiv> subdivList = subdivRepository.findAllById(requestDto.getSubdivIdList());
+
+        if(optionalRequest.isPresent()){
             //get Request object to update
             Request existingRequest = optionalRequest.get();
 
@@ -111,25 +119,81 @@ public class RequestServiceImpl implements  RequestService{
             existingRequest.setDescription(requestDto.getDescription());
             existingRequest.setFund(requestDto.getFund());
             existingRequest.setEstimation(requestDto.getEstimation());
-            //already have the status
+
+
             existingRequest.setStatus(requestDto.getStatus());
+
             existingRequest.setPreviouslyPurchased(requestDto.isPreviouslyPurchased());
             existingRequest.setPreviousPurchaseYear(requestDto.getPreviousPurchaseYear());
             existingRequest.setReasonForRequirement(requestDto.getReasonForRequirement());
             existingRequest.setApprovedDate(requestDto.getApprovedDate());
             existingRequest.setAuthorizedBy(requestDto.getAuthorizedBy());
+
             //add current date as created date
             existingRequest.setCreatedDate(new Date());
 
-            //setting objects User & Subdiv Object list
+            //setting objects User & Sub-div Object list
             existingRequest.setCreatedBy(userUpdatedBy);
-            existingRequest.setSubdivList(subdivList);
+            //set only if the new list is not empty - if empty doesn't change
+
+                existingRequest.setSubdivList(subdivList);
+
 
             //save and return as dto
             return requestRepository.save(existingRequest).getRequestDto();
         }
-
         return null;
+    }
+
+    //USED ONE
+    @Override
+    public RequestDto updateRequest(Request request, RequestDto requestDto) {
+
+        //4. get logged User object
+        Long loggedUserId = authService.getLoggedUserDto().getId();
+        User updatedBy = userRepository.findById(loggedUserId)
+                .orElseThrow(()-> new RuntimeException("User not found"));
+
+        //5. find sub-divs
+        List<Subdiv> subdivList = subdivRepository.findAllById(requestDto.getSubdivIdList());
+
+        //check for sub-div list
+        if(subdivList.size() != requestDto.getSubdivIdList().size()){
+            throw new RuntimeException("Invalid sub-div ids");
+        }
+
+
+        //Update fields of request with dto
+        request.setTitle(requestDto.getTitle());
+        request.setQuantity(requestDto.getQuantity());
+        request.setDescription(requestDto.getDescription());
+        request.setFund(requestDto.getFund());
+        request.setEstimation(requestDto.getEstimation());
+
+        request.setPreviouslyPurchased(requestDto.isPreviouslyPurchased());
+        request.setPreviousPurchaseYear(requestDto.getPreviousPurchaseYear());
+        request.setReasonForRequirement(requestDto.getReasonForRequirement());
+        request.setApprovedDate(requestDto.getApprovedDate());
+        request.setAuthorizedBy(requestDto.getAuthorizedBy());
+
+        request.setStatus(requestDto.getStatus());
+
+        //add current date as created date
+        request.setCreatedDate(new Date());
+        //setting objects User & Sub-div Object list
+        request.setCreatedBy(updatedBy);
+
+        request.setSubdivList(subdivList);
+
+        return requestRepository.save(request).getRequestDto();
+    }
+
+    //get Requests by id
+    @Override
+    public RequestDto getRequestById(Long requestId) {
+        return requestRepository.findById(requestId)
+                .map(Request::getRequestDto)
+                .orElseThrow(() -> new EntityNotFoundException("Request is not found"));
     }
 
     //get all requests - sorted - FYI
@@ -146,10 +210,18 @@ public class RequestServiceImpl implements  RequestService{
     @Override
     public void deleteRequest(Long requestId) {
         Optional<Request> optionalRequest = requestRepository.findById(requestId);
+
         if(!optionalRequest.isPresent()){
             throw new RuntimeException("Request is not found");
         }
         requestRepository.deleteById(requestId);
     }
+
+    //USED ONE
+    @Override
+    public void deleteRequest(Request request) {
+        requestRepository.delete(request);
+    }
+
 
 }

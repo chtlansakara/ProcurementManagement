@@ -3,6 +3,7 @@ package com.cht.procurementManagement.dto;
 import com.cht.procurementManagement.entities.Subdiv;
 import com.cht.procurementManagement.entities.User;
 import com.cht.procurementManagement.enums.RequestStatus;
+import com.cht.procurementManagement.enums.UserRole;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
@@ -33,6 +34,12 @@ public class RequestDto {
     private String userNameCreatedBy;
     private String employeeIdCreatedBy;
 
+    private UserRole userRoleCreatedBy;
+    private String subdivCreatedBy;
+    private String subdivCodeCreatedBy;
+    private String admindivCreatedBy;
+    private String admindivCodeCreatedBy;
+
 
     //represent sub-division
     private List<Long> subdivIdList;
@@ -52,6 +59,46 @@ public class RequestDto {
 
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
+    }
+
+    public UserRole getUserRoleCreatedBy() {
+        return userRoleCreatedBy;
+    }
+
+    public void setUserRoleCreatedBy(UserRole userRoleCreatedBy) {
+        this.userRoleCreatedBy = userRoleCreatedBy;
+    }
+
+    public String getSubdivCreatedBy() {
+        return subdivCreatedBy;
+    }
+
+    public void setSubdivCreatedBy(String subdivCreatedBy) {
+        this.subdivCreatedBy = subdivCreatedBy;
+    }
+
+    public String getSubdivCodeCreatedBy() {
+        return subdivCodeCreatedBy;
+    }
+
+    public void setSubdivCodeCreatedBy(String subdivCodeCreatedBy) {
+        this.subdivCodeCreatedBy = subdivCodeCreatedBy;
+    }
+
+    public String getAdmindivCreatedBy() {
+        return admindivCreatedBy;
+    }
+
+    public void setAdmindivCreatedBy(String admindivCreatedBy) {
+        this.admindivCreatedBy = admindivCreatedBy;
+    }
+
+    public String getAdmindivCodeCreatedBy() {
+        return admindivCodeCreatedBy;
+    }
+
+    public void setAdmindivCodeCreatedBy(String admindivCodeCreatedBy) {
+        this.admindivCodeCreatedBy = admindivCodeCreatedBy;
     }
 
     public Long getId() {

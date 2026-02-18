@@ -41,6 +41,11 @@ public class Comment {
             commentDto.setCreatedByUserEmail(createdBy.getEmail());
             commentDto.setCreatedbyUsername(createdBy.getName());
             commentDto.setCreatedByUserEmployeeId(createdBy.getEmployeeId());
+            commentDto.setUserRoleCreatedBy(createdBy.getUserRole());
+            commentDto.setSubdivCreatedBy(createdBy.getSubdiv().getName());
+            commentDto.setSubdivCodeCreatedBy(createdBy.getSubdiv().getCode());
+            commentDto.setAdmindivCreatedBy(createdBy.getAdmindiv().getName());
+            commentDto.setAdmindivCodeCreatedBy(createdBy.getAdmindiv().getCode());
         }
         //request details
         if (request != null) {

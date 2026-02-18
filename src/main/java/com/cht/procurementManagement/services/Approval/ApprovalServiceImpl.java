@@ -54,7 +54,7 @@ public class ApprovalServiceImpl implements  ApprovalService{
             approval.setPlanNo(approvalDto.getPlanNo());
             approval.setComment(approvalDto.getComment());
             approval.setFund(approvalDto.getFund());
-            approval.setAuthroizedBy(approvalDto.getAuthroizedBy());
+            approval.setAuthroizedBy(approvalDto.getAuthorizedBy());
             approval.setApprovedDate(approvalDto.getApprovedDate());
             //set current date
             approval.setApprovedDate(new Date());
@@ -75,7 +75,7 @@ public class ApprovalServiceImpl implements  ApprovalService{
     public List<ApprovalDto> getApprovalsByRequestId(Long requestId) {
        return approvalRepository.findAllByRequestId(requestId)
                .stream()
-               .sorted(Comparator.comparing(Approval::getCreatedDate))
+               .sorted(Comparator.comparing(Approval::getId))
                .map(Approval::getApprovalDto)
                .collect(Collectors.toList());
 

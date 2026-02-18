@@ -81,7 +81,11 @@ public class Request {
             requestDto.setEmailCreatedBy(createdBy.getEmail());
             requestDto.setUserNameCreatedBy(createdBy.getName());
             requestDto.setEmployeeIdCreatedBy(createdBy.getEmployeeId());
-
+            requestDto.setUserRoleCreatedBy(createdBy.getUserRole());
+            requestDto.setSubdivCreatedBy(createdBy.getSubdiv().getName());
+            requestDto.setSubdivCodeCreatedBy(createdBy.getSubdiv().getCode());
+            requestDto.setAdmindivCreatedBy(createdBy.getAdmindiv().getName());
+            requestDto.setAdmindivCodeCreatedBy(createdBy.getAdmindiv().getCode());
         }
 
         //sub-div
