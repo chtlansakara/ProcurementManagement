@@ -110,7 +110,7 @@ public class AdmindivUserController {
     }
 
     //approve the request
-    @PostMapping("requests/approve/{id}")
+    @PostMapping("/requests/approve/{id}")
     public ResponseEntity<?> approveRequestBySupplies(@PathVariable Long id, @RequestBody ApprovalDto approvalDto){
         ApprovalDto createdApprovalDto =adminDivService.approveRequestByAdmindiv(id, approvalDto);
         if(createdApprovalDto == null){
@@ -121,7 +121,7 @@ public class AdmindivUserController {
 
 
     //get subdiv list
-    @GetMapping("subdivs")
+    @GetMapping("/subdivs")
     public ResponseEntity<?> getSubdivList(){
         try{
             return ResponseEntity.ok(adminDivService.getSubdivList());
@@ -131,7 +131,7 @@ public class AdmindivUserController {
     }
 
     //get comments list
-    @GetMapping("requests/comments/{id}")
+    @GetMapping("/requests/comments/{id}")
     public ResponseEntity<?> getCommentsByRequestId(@PathVariable Long id){
         try {
             return ResponseEntity.ok(adminDivService.getCommentsByRequestId(id));
@@ -142,7 +142,7 @@ public class AdmindivUserController {
 
 
     //get approvals list
-    @GetMapping("requests/approvals/{id}")
+    @GetMapping("/requests/approvals/{id}")
     public ResponseEntity<?> getApprovalsByRequestId(@PathVariable Long id){
         try {
             return ResponseEntity.ok(adminDivService.getApprovalsByRequestId(id));

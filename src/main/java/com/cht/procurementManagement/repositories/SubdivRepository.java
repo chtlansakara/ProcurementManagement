@@ -11,5 +11,7 @@ public interface SubdivRepository extends JpaRepository<Subdiv, Long> {
     boolean existsByCode(String code);
     List<Subdiv> findByAdmindivId(Long id);
 
+    Long countByIdIn(List<Long> ids);
+
 
 }

@@ -28,17 +28,29 @@ public class RequestDto {
     private String authorizedBy;
     private Date createdDate;
 
+    private Date lastUpdatedDate;
+
     //represent created by User
     private Long userIdCreatedBy;
     private String emailCreatedBy;
     private String userNameCreatedBy;
     private String employeeIdCreatedBy;
-
     private UserRole userRoleCreatedBy;
     private String subdivCreatedBy;
     private String subdivCodeCreatedBy;
     private String admindivCreatedBy;
     private String admindivCodeCreatedBy;
+
+    //represent last updated by User
+    private Long userIdLastUpdatedBy;
+    private String emailLastUpdatedBy;
+    private String userNameLastUpdatedBy;
+    private String employeeIdLastUpdatedBy;
+    private UserRole userRoleLastUpdatedBy;
+    private String subdivLastUpdatedBy;
+    private String subdivCodeLastUpdatedBy;
+    private String admindivLastUpdatedBy;
+    private String admindivCodeLastUpdatedBy;
 
 
     //represent sub-division
@@ -52,6 +64,86 @@ public class RequestDto {
 //    private List<String> admindivCodeList;
 
     //get-set methods
+
+    public Date getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(Date lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
+    }
+
+    public Long getUserIdLastUpdatedBy() {
+        return userIdLastUpdatedBy;
+    }
+
+    public void setUserIdLastUpdatedBy(Long userIdLastUpdatedBy) {
+        this.userIdLastUpdatedBy = userIdLastUpdatedBy;
+    }
+
+    public String getEmailLastUpdatedBy() {
+        return emailLastUpdatedBy;
+    }
+
+    public void setEmailLastUpdatedBy(String emailLastUpdatedBy) {
+        this.emailLastUpdatedBy = emailLastUpdatedBy;
+    }
+
+    public String getUserNameLastUpdatedBy() {
+        return userNameLastUpdatedBy;
+    }
+
+    public void setUserNameLastUpdatedBy(String userNameLastUpdatedBy) {
+        this.userNameLastUpdatedBy = userNameLastUpdatedBy;
+    }
+
+    public String getEmployeeIdLastUpdatedBy() {
+        return employeeIdLastUpdatedBy;
+    }
+
+    public void setEmployeeIdLastUpdatedBy(String employeeIdLastUpdatedBy) {
+        this.employeeIdLastUpdatedBy = employeeIdLastUpdatedBy;
+    }
+
+    public UserRole getUserRoleLastUpdatedBy() {
+        return userRoleLastUpdatedBy;
+    }
+
+    public void setUserRoleLastUpdatedBy(UserRole userRoleLastUpdatedBy) {
+        this.userRoleLastUpdatedBy = userRoleLastUpdatedBy;
+    }
+
+    public String getSubdivLastUpdatedBy() {
+        return subdivLastUpdatedBy;
+    }
+
+    public void setSubdivLastUpdatedBy(String subdivLastUpdatedBy) {
+        this.subdivLastUpdatedBy = subdivLastUpdatedBy;
+    }
+
+    public String getSubdivCodeLastUpdatedBy() {
+        return subdivCodeLastUpdatedBy;
+    }
+
+    public void setSubdivCodeLastUpdatedBy(String subdivCodeLastUpdatedBy) {
+        this.subdivCodeLastUpdatedBy = subdivCodeLastUpdatedBy;
+    }
+
+    public String getAdmindivLastUpdatedBy() {
+        return admindivLastUpdatedBy;
+    }
+
+    public void setAdmindivLastUpdatedBy(String admindivLastUpdatedBy) {
+        this.admindivLastUpdatedBy = admindivLastUpdatedBy;
+    }
+
+    public String getAdmindivCodeLastUpdatedBy() {
+        return admindivCodeLastUpdatedBy;
+    }
+
+    public void setAdmindivCodeLastUpdatedBy(String admindivCodeLastUpdatedBy) {
+        this.admindivCodeLastUpdatedBy = admindivCodeLastUpdatedBy;
+    }
 
     public Date getCreatedDate() {
         return createdDate;

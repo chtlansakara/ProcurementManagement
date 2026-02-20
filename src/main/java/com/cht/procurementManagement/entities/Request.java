@@ -29,6 +29,7 @@ public class Request {
     private Date approvedDate;
     private String authorizedBy;
     private Date createdDate;
+    private Date lastUpdatedDate;
 
     //User- createdBy
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
@@ -36,6 +37,12 @@ public class Request {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
     private User createdBy;
+
+    //User- updatedBy
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "request_updatedBy", nullable = true)
+    @JsonIgnore
+    private User lastUpdatedBy;
 
     //Subdiv
     @ManyToMany()
@@ -47,15 +54,15 @@ public class Request {
     @OrderColumn(name = "subdiv_order")
     private List<Subdiv> subdivList;
 
-    //admindiv
-//    @ManyToMany()
-//    @JoinTable(
-//            name = "request_admindiv",
-//            joinColumns = @JoinColumn(name = "request_id"),
-//            inverseJoinColumns = @JoinColumn(name = "admindiv_id")
-//    )
-//    @OrderColumn(name = "admindiv_order")
-//    private List<Admindiv> admindivList;
+
+    //for procurement relationship
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "procurement_id")
+    @JsonIgnore
+    private Procurement procurement;
+
+
+
 
 
     //to convert to request DTO
@@ -74,6 +81,7 @@ public class Request {
         requestDto.setApprovedDate(approvedDate);
         requestDto.setAuthorizedBy(authorizedBy);
         requestDto.setCreatedDate(createdDate);
+        requestDto.setLastUpdatedDate(lastUpdatedDate);
 
         //user
         if(createdBy != null){
@@ -87,6 +95,20 @@ public class Request {
             requestDto.setAdmindivCreatedBy(createdBy.getAdmindiv().getName());
             requestDto.setAdmindivCodeCreatedBy(createdBy.getAdmindiv().getCode());
         }
+
+        //user
+        if(lastUpdatedBy != null){
+            requestDto.setUserIdLastUpdatedBy(lastUpdatedBy.getId());
+            requestDto.setEmailLastUpdatedBy(lastUpdatedBy.getEmail());
+            requestDto.setUserNameLastUpdatedBy(lastUpdatedBy.getName());
+            requestDto.setEmployeeIdLastUpdatedBy(lastUpdatedBy.getEmployeeId());
+            requestDto.setUserRoleLastUpdatedBy(lastUpdatedBy.getUserRole());
+            requestDto.setSubdivLastUpdatedBy(lastUpdatedBy.getSubdiv().getName());
+            requestDto.setSubdivCodeLastUpdatedBy(lastUpdatedBy.getSubdiv().getCode());
+            requestDto.setAdmindivLastUpdatedBy(lastUpdatedBy.getAdmindiv().getName());
+            requestDto.setAdmindivCodeLastUpdatedBy(lastUpdatedBy.getAdmindiv().getCode());
+        }
+
 
         //sub-div
         if(subdivList != null){
@@ -135,6 +157,22 @@ public class Request {
 
 
     //get-set methods
+
+    public Date getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(Date lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
+    }
+
+    public User getLastUpdatedBy() {
+        return lastUpdatedBy;
+    }
+
+    public void setLastUpdatedBy(User lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
+    }
 
     public Date getCreatedDate() {
         return createdDate;

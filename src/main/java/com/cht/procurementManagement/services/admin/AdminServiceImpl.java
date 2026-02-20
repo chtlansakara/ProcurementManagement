@@ -1,17 +1,12 @@
 package com.cht.procurementManagement.services.admin;
 
+import com.cht.procurementManagement.dto.ProcurementStatusDto;
 import com.cht.procurementManagement.dto.SubdivDto;
 import com.cht.procurementManagement.dto.UserDto;
-import com.cht.procurementManagement.entities.Admindiv;
-import com.cht.procurementManagement.entities.Designation;
-import com.cht.procurementManagement.entities.Subdiv;
-import com.cht.procurementManagement.entities.User;
+import com.cht.procurementManagement.dto.VendorDto;
+import com.cht.procurementManagement.entities.*;
 import com.cht.procurementManagement.enums.UserRole;
-import com.cht.procurementManagement.repositories.AdmindivRepository;
-import com.cht.procurementManagement.repositories.DesignationRepository;
-import com.cht.procurementManagement.repositories.SubdivRepository;
-import com.cht.procurementManagement.repositories.UserRepository;
-import com.cht.procurementManagement.services.admin.AdminService;
+import com.cht.procurementManagement.repositories.*;
 import jakarta.persistence.EntityExistsException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.expression.ExpressionException;
@@ -19,9 +14,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,22 +27,152 @@ public class AdminServiceImpl implements AdminService {
     private final DesignationRepository designationRepository;
     private final SubdivRepository subdivRepository;
     private final UserRepository userRepository;
+    private final ProcurementStatusRepository procurementStatusRepository;
+    private final VendorRepository vendorRepository;
 
     public AdminServiceImpl(
             AdmindivRepository admindivRepository,
             DesignationRepository designationRepository,
             SubdivRepository subdivRepository,
-            UserRepository userRepository
-    ) {
+            UserRepository userRepository,
+            ProcurementStatusRepository procurementStatusRepository,
+            VendorRepository vendorRepository) {
         this.admindivRepository = admindivRepository;
         this.designationRepository = designationRepository;
         this.subdivRepository = subdivRepository;
         this.userRepository = userRepository;
+        this.procurementStatusRepository = procurementStatusRepository;
+        this.vendorRepository = vendorRepository;
     }
 
     //Users -----------------------------------------------------------------------------
 
 
+    @Override
+    public VendorDto createVendor(VendorDto vendorDto) {
+        //create new object
+        Vendor vendor = new Vendor();
+        vendor.setName(vendorDto.getName());
+        //if date does not exist, set current date
+        if(vendorDto.getRegisteredDate() != null) {
+            vendor.setRegisteredDate(vendorDto.getRegisteredDate());
+        }
+        vendor.setRegisteredDate(new Date());
+        vendor.setComments(vendorDto.getComments());
+        //save to db & return dto
+        return vendorRepository.save(vendor).getVendorDto();
+    }
+
+    @Override
+    public List<VendorDto> getVendors() {
+        return vendorRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Vendor::getName))
+                .map(Vendor::getVendorDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public VendorDto getVendorById(Long id) {
+        return vendorRepository.findById(id).map(Vendor::getVendorDto)
+                .orElseThrow(() -> new ExpressionException("Vendor with id "+id+ " is not found!"));
+    }
+
+    @Override
+    public VendorDto updateVendor(Long id, VendorDto vendorDto) {
+        //check if the vendor id exists
+        Optional<Vendor> optionalVendor = vendorRepository.findById(id);
+        if(optionalVendor.isEmpty()){
+            throw new RuntimeException("Vendor is not found");
+        }
+        //update
+        Vendor existing = optionalVendor.get();
+        existing.setName(vendorDto.getName());
+        //if date exists, update
+        if(vendorDto.getRegisteredDate() != null) {
+            existing.setRegisteredDate(vendorDto.getRegisteredDate());
+        }
+        existing.setComments(vendorDto.getComments());
+        return vendorRepository.save(existing).getVendorDto();
+    }
+
+    @Override
+    public void deleteVendor(Long id) {
+        //check if the vendor id exists
+        Optional<Vendor> optionalVendor = vendorRepository.findById(id);
+        if(optionalVendor.isEmpty()){
+            throw new RuntimeException("Vendor is not found");
+        }
+        //delete
+        vendorRepository.deleteById(id);
+    }
+
+
+    //Users -----------------------------------------------------------------------------
+
+    @Override
+    public ProcurementStatusDto createProcurementStatus(ProcurementStatusDto procurementStatusDto) {
+        //check for unique constraints with name
+        if(procurementStatusRepository.findFirstByName(procurementStatusDto.getName()).isPresent()){
+            throw new EntityExistsException("Status name already exists");
+        }
+
+        //create new object
+        ProcurementStatus procurementStatus = new ProcurementStatus();
+        procurementStatus.setName(procurementStatusDto.getName());
+        //save to db & return dto
+        return procurementStatusRepository.save(procurementStatus).getProcurementStatusDto();
+
+    }
+
+    @Override
+    public List<ProcurementStatusDto> getProcurementStatus() {
+        return procurementStatusRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(ProcurementStatus::getName))
+                .map(ProcurementStatus::getProcurementStatusDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ProcurementStatusDto getProcurementStatusById(Long id) {
+        return procurementStatusRepository.findById(id).map(ProcurementStatus::getProcurementStatusDto)
+                .orElseThrow(() -> new ExpressionException("Procurement status with id "+id+ " is not found!"));
+    }
+
+    @Override
+    public ProcurementStatusDto updateProcurementStatus(Long id, ProcurementStatusDto procurementStatusDto) {
+        //check if the status exists
+        Optional<ProcurementStatus> optionalProcurementStatus = procurementStatusRepository.findById(id);
+        if(optionalProcurementStatus.isEmpty()){
+            throw new RuntimeException("Status is not found");
+        }
+        //check if new name is already present
+        if(procurementStatusRepository.findFirstByName(procurementStatusDto.getName()).isPresent()){
+            throw new EntityExistsException("Status name already exists");
+        }
+        //update
+        ProcurementStatus existing = optionalProcurementStatus.get();
+        existing.setName(procurementStatusDto.getName());
+        //save & return as dto
+        return procurementStatusRepository.save(existing).getProcurementStatusDto();
+    }
+
+    @Override
+    public void deleteProcurementStatus(Long id) {
+        //check if the status exists
+        Optional<ProcurementStatus> optionalProcurementStatus = procurementStatusRepository.findById(id);
+        if(optionalProcurementStatus.isEmpty()){
+            throw new RuntimeException("Status is not found");
+        }
+        //delete
+        procurementStatusRepository.deleteById(id);
+
+    }
+
+
+
+    //Users -----------------------------------------------------------------------------
 
     @Override
     public UserDto createUser(UserDto userDto) {

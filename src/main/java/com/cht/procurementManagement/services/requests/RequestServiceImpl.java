@@ -179,9 +179,9 @@ public class RequestServiceImpl implements  RequestService{
         request.setStatus(requestDto.getStatus());
 
         //add current date as created date
-        request.setCreatedDate(new Date());
+        request.setLastUpdatedDate(new Date());
         //setting objects User & Sub-div Object list
-        request.setCreatedBy(updatedBy);
+        request.setLastUpdatedBy(updatedBy);
 
         request.setSubdivList(subdivList);
 

@@ -57,7 +57,7 @@ public class ApprovalServiceImpl implements  ApprovalService{
             approval.setAuthroizedBy(approvalDto.getAuthorizedBy());
             approval.setApprovedDate(approvalDto.getApprovedDate());
             //set current date
-            approval.setApprovedDate(new Date());
+            approval.setCreatedDate(new Date());
             approval.setType(approvalDto.getType());
             //user
             approval.setCreatedBy(userCreatedBy);
