@@ -47,6 +47,7 @@ public class RequestDto {
     private String userNameLastUpdatedBy;
     private String employeeIdLastUpdatedBy;
     private UserRole userRoleLastUpdatedBy;
+
     private String subdivLastUpdatedBy;
     private String subdivCodeLastUpdatedBy;
     private String admindivLastUpdatedBy;
@@ -58,12 +59,70 @@ public class RequestDto {
     private List<String> subdivNameList;
     private List<String> subdivCodeList;
 
+
+    //represent its procurement if there
+    private Long procurementId;
+    private String procurementName;
+
+    private Date procurementScheduledCommenceDate;
+    private Date procurementExpectedCompletionDate;
+    private Long procurementStatusId;
+    private String procurementStatusName;
+
     //represent admin-division
 //    private List<Long> admindivIdList;
 //    private List<String> admindivNameList;
 //    private List<String> admindivCodeList;
 
     //get-set methods
+
+    public Long getProcurementStatusId() {
+        return procurementStatusId;
+    }
+
+    public void setProcurementStatusId(Long procurementStatusId) {
+        this.procurementStatusId = procurementStatusId;
+    }
+
+    public String getProcurementStatusName() {
+        return procurementStatusName;
+    }
+
+    public void setProcurementStatusName(String procurementStatusName) {
+        this.procurementStatusName = procurementStatusName;
+    }
+
+    public Long getProcurementId() {
+        return procurementId;
+    }
+
+    public void setProcurementId(Long procurementId) {
+        this.procurementId = procurementId;
+    }
+
+    public String getProcurementName() {
+        return procurementName;
+    }
+
+    public void setProcurementName(String procurementName) {
+        this.procurementName = procurementName;
+    }
+
+    public Date getProcurementScheduledCommenceDate() {
+        return procurementScheduledCommenceDate;
+    }
+
+    public void setProcurementScheduledCommenceDate(Date procurementScheduledCommenceDate) {
+        this.procurementScheduledCommenceDate = procurementScheduledCommenceDate;
+    }
+
+    public Date getProcurementExpectedCompletionDate() {
+        return procurementExpectedCompletionDate;
+    }
+
+    public void setProcurementExpectedCompletionDate(Date procurementExpectedCompletionDate) {
+        this.procurementExpectedCompletionDate = procurementExpectedCompletionDate;
+    }
 
     public Date getLastUpdatedDate() {
         return lastUpdatedDate;

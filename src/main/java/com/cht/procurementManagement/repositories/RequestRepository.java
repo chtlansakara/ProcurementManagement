@@ -13,6 +13,8 @@ import java.util.List;
 public interface RequestRepository extends JpaRepository<Request,Long> {
     List<Request> findAll();
 
+    Long countByIdIn(List<Long> ids);
+
     //sub-divs ----------------------------
     //get requests by subdiv id (can have other sub-divisions)
     @Query("SELECT DISTINCT r FROM Request r " +

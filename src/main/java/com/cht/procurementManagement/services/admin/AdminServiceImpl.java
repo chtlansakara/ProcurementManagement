@@ -1,9 +1,6 @@
 package com.cht.procurementManagement.services.admin;
 
-import com.cht.procurementManagement.dto.ProcurementStatusDto;
-import com.cht.procurementManagement.dto.SubdivDto;
-import com.cht.procurementManagement.dto.UserDto;
-import com.cht.procurementManagement.dto.VendorDto;
+import com.cht.procurementManagement.dto.*;
 import com.cht.procurementManagement.entities.*;
 import com.cht.procurementManagement.enums.UserRole;
 import com.cht.procurementManagement.repositories.*;
@@ -129,6 +126,7 @@ public class AdminServiceImpl implements AdminService {
     public List<ProcurementStatusDto> getProcurementStatus() {
         return procurementStatusRepository.findAll()
                 .stream()
+                .filter(status-> status.getId() != 2)
                 .sorted(Comparator.comparing(ProcurementStatus::getName))
                 .map(ProcurementStatus::getProcurementStatusDto)
                 .collect(Collectors.toList());
@@ -392,53 +390,83 @@ public class AdminServiceImpl implements AdminService {
 
 
     @Override
-    public Admindiv createAdmindiv(Admindiv admindiv) {
+    public AdmindivDto createAdmindiv(AdmindivDto admindivDto) {
         //check for unique constraints
-        if(admindivRepository.existsByCode(admindiv.getCode())){
+        if(admindivRepository.existsByCode(admindivDto.getCode())){
             throw new RuntimeException("Code already exists");
         }
-        if(admindivRepository.existsByName(admindiv.getName())){
+        if(admindivRepository.existsByName(admindivDto.getName())){
             throw new RuntimeException("Name already exists");
         }
-        return admindivRepository.save(admindiv);
+        //check for designation object
+        Designation responsible = designationRepository.findById((admindivDto.getResponsibleDesignationId()))
+                .orElseThrow(() -> new ExpressionException("Designation is not found"));
+
+        Admindiv newAdmindiv = new Admindiv();
+
+        newAdmindiv.setEmail(admindivDto.getEmail());
+        newAdmindiv.setName(admindivDto.getName());
+        newAdmindiv.setCode(admindivDto.getCode());
+        newAdmindiv.setTelephone(admindivDto.getTelephone());
+        newAdmindiv.setAddress(admindivDto.getAddress());
+        //set designation object
+        newAdmindiv.setResponsibleDesignation(responsible);
+
+        return admindivRepository.save(newAdmindiv).getAdmindivDto();
     }
 
     @Override
-    public List<Admindiv> getAllAdmindivs() {
+    public List<AdmindivDto> getAllAdmindivs() {
         return admindivRepository.findAll()
                 .stream()
                 .sorted(Comparator.comparing(Admindiv::getCode))
+                .map(Admindiv::getAdmindivDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Admindiv getAdmindivById(Long id) {
-        //returns null if not found
+    public AdmindivDto getAdmindivById(Long id) {
+        //returns an error if not found
         Optional<Admindiv> optionalAdmindiv = admindivRepository.findById(id);
-        return optionalAdmindiv
-                .orElseThrow( () -> new ExpressionException("Admin division with id "+id+ " is not found!") );
+
+        if(optionalAdmindiv.isPresent()) {
+            return optionalAdmindiv.get().getAdmindivDto();
+        }else {
+            throw new RuntimeException("Admin division with id " + id + " is not found!");
+        }
+
     }
 
     @Override
-    public Admindiv updateAdmindiv(Long id, Admindiv admindiv) {
+    public AdmindivDto updateAdmindiv(Long id, AdmindivDto admindivDto) {
+
         Optional<Admindiv> optionalAdmindiv = admindivRepository.findById(id);
 
         if(optionalAdmindiv.isPresent()){
             Admindiv existingAdmindiv = optionalAdmindiv.get();
 
             //check for unique constraints - if not the same
-            if(!(existingAdmindiv.getCode().equals(admindiv.getCode())) && admindivRepository.existsByCode(admindiv.getCode())){
+            if(!(existingAdmindiv.getCode().equals(admindivDto.getCode())) && admindivRepository.existsByCode(admindivDto.getCode())){
                 throw new RuntimeException("Code already exists");
             }
-            if(!(existingAdmindiv.getName().equals(admindiv.getName()))&& admindivRepository.existsByName(admindiv.getName())){
+            if(!(existingAdmindiv.getName().equals(admindivDto.getName()))&& admindivRepository.existsByName(admindivDto.getName())){
                 throw new RuntimeException("Name already exists");
             }
-            existingAdmindiv.setEmail(admindiv.getEmail());
-            existingAdmindiv.setName(admindiv.getName());
-            existingAdmindiv.setCode(admindiv.getCode());
-            existingAdmindiv.setTelephone(admindiv.getTelephone());
-            existingAdmindiv.setAddress(admindiv.getAddress());
-            return  admindivRepository.save(existingAdmindiv);
+
+            if(admindivDto.getResponsibleDesignationId()!= null){
+                //find the designation object
+                Designation responsible = designationRepository.findById(admindivDto.getResponsibleDesignationId())
+                        .orElseThrow(() ->  new ExpressionException("Designation not found"));
+                //set the new designation
+                existingAdmindiv.setResponsibleDesignation(responsible);
+            }
+            //set other fields
+            existingAdmindiv.setEmail(admindivDto.getEmail());
+            existingAdmindiv.setName(admindivDto.getName());
+            existingAdmindiv.setCode(admindivDto.getCode());
+            existingAdmindiv.setTelephone(admindivDto.getTelephone());
+            existingAdmindiv.setAddress(admindivDto.getAddress());
+            return  admindivRepository.save(existingAdmindiv).getAdmindivDto();
         }
         return null;
     }
@@ -462,17 +490,23 @@ public class AdminServiceImpl implements AdminService {
         if(designationRepository.existsByCode(newDesignation.getCode())){
             throw new RuntimeException("Code already exists");
         }
-        //check for compound unique constraints
-        if(designationRepository.existsByTitleAndGrade(newDesignation.getTitle(), newDesignation.getGrade())){
-            throw new RuntimeException("Title & grade already exists");
-        }
-        try{
-            return designationRepository.save(newDesignation);
-        }catch (DataIntegrityViolationException e){
-            throw new RuntimeException("Duplicate entry for title + grade");
+        if(designationRepository.existsByTitle(newDesignation.getTitle())){
+            throw new RuntimeException("Title already exits");
         }
 
+        //check for compound unique constraints
+//        if(designationRepository.existsByTitleAndGrade(newDesignation.getTitle(), newDesignation.getGrade())){
+//            throw new RuntimeException("Title & grade already exists");
+//        }
+//        try{
+//            return designationRepository.save(newDesignation);
+//        }catch (DataIntegrityViolationException e){
+//            throw new RuntimeException("Duplicate entry for title + grade");
+//        }
+
+        return designationRepository.save(newDesignation);
     }
+
     //get designation list
     @Override
     public List<Designation> getAllDesignations() {
@@ -500,11 +534,16 @@ public class AdminServiceImpl implements AdminService {
             if(!(existingDesignation.getCode().equals(designation.getCode())) && designationRepository.existsByCode(designation.getCode())){
                 throw new RuntimeException("Code already exists");
             }
-            if(!(existingDesignation.getTitle().equals(designation.getTitle()) && existingDesignation.getGrade().equals(designation.getGrade())) && designationRepository.existsByTitleAndGrade(designation.getTitle(), designation.getGrade())){
-                throw new RuntimeException("Title & grade already exists");
+            if(!(existingDesignation.getTitle().equals(designation.getTitle())) && designationRepository.existsByTitle(designation.getTitle())){
+                throw new RuntimeException("Title already exists");
             }
+
+//            if(!(existingDesignation.getTitle().equals(designation.getTitle()) && existingDesignation.getGrade().equals(designation.getGrade())) && designationRepository.existsByTitleAndGrade(designation.getTitle(), designation.getGrade())){
+//                throw new RuntimeException("Title & grade already exists");
+//            }
+
             existingDesignation.setTitle(designation.getTitle());
-            existingDesignation.setGrade(designation.getGrade());
+//            existingDesignation.setGrade(designation.getGrade());
             existingDesignation.setCode(designation.getCode());
             return  designationRepository.save(existingDesignation);
         }

@@ -20,7 +20,6 @@ public class Subdiv {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "admindiv_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
     private Admindiv admindiv;
 
@@ -33,9 +32,11 @@ public class Subdiv {
         subdivDto.setCode(code);
         subdivDto.setTelephone(telephone);
         subdivDto.setAddress(address);
-        subdivDto.setAdmindivId(admindiv.getId());
-        subdivDto.setAdmindivName(admindiv.getName());
-        subdivDto.setAdmindivCode(admindiv.getCode());
+        if(admindiv!= null) {
+            subdivDto.setAdmindivId(admindiv.getId());
+            subdivDto.setAdmindivName(admindiv.getName());
+            subdivDto.setAdmindivCode(admindiv.getCode());
+        }
         return subdivDto;
     }
 

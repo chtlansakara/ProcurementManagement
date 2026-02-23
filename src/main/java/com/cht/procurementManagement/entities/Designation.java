@@ -3,18 +3,12 @@ package com.cht.procurementManagement.entities;
 import jakarta.persistence.*;
 
 @Entity
-@Table(
-        name="designation",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"title","grade"}, name = "idx_title_grade")}
-)
 public class Designation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "title", nullable = false)
+    @Column(name = "title", nullable = false, unique = true)
     private String title;
-    @Column(name = "grade", nullable = false)
-    private String grade;
     @Column(name = "code", nullable = false, unique = true)
     private String code;
 
@@ -44,11 +38,4 @@ public class Designation {
         this.title = title;
     }
 
-    public String getGrade() {
-        return grade;
-    }
-
-    public void setGrade(String grade) {
-        this.grade = grade;
-    }
 }

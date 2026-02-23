@@ -38,13 +38,13 @@ public class Procurement {
 
 
 //objects selected by user
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
     @JoinColumn(name = "procurement_assignedTo")
     private User assignedTo;
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "procurement_status")
     private ProcurementStatus status;
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "procurement_vendor")
     private Vendor vendor;
 
@@ -56,7 +56,7 @@ public class Procurement {
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "procurement_createdBy")
     private User createdBy;
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "procurement_lastUpdatedBy")
     private User lastUpdatedBy;
 

@@ -17,11 +17,14 @@ public class UserDto {
     //user role from enum
     private UserRole userRole;
     //instead of objects
+    //for subdiv
     private Long subdivId;
     private String subdivName;
     private String subdivCode;
+    //for admindiv
     private Long admindivId;
     private String admindivName;
+    //for designation
     private Long designationId;
     private String designationCode;
 

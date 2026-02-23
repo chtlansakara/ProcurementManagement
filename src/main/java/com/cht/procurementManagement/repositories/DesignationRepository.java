@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DesignationRepository extends JpaRepository<Designation, Long> {
     boolean existsByCode(String code);
-    boolean existsByTitleAndGrade(String title, String grade);
+    boolean existsByTitle(String title);
 }

@@ -131,6 +131,15 @@ public class Request {
                             .toList());
         }
 
+        if(procurement!= null){
+            requestDto.setProcurementId(procurement.getId());
+            requestDto.setProcurementName(procurement.getName());
+            requestDto.setProcurementScheduledCommenceDate(procurement.getScheduledCommenceDate());
+            requestDto.setProcurementExpectedCompletionDate(procurement.getExpectedCompletionDate());
+            requestDto.setProcurementStatusId(procurement.getStatus().getId());
+            requestDto.setProcurementStatusName(procurement.getStatus().getName());
+        }
+
         //sub-div
 //        if(admindivList != null){
 //            requestDto.setAdmindivIdList(
@@ -157,6 +166,14 @@ public class Request {
 
 
     //get-set methods
+
+    public Procurement getProcurement() {
+        return procurement;
+    }
+
+    public void setProcurement(Procurement procurement) {
+        this.procurement = procurement;
+    }
 
     public Date getLastUpdatedDate() {
         return lastUpdatedDate;

@@ -1,5 +1,6 @@
 package com.cht.procurementManagement.controllers.admin;
 
+import com.cht.procurementManagement.dto.AdmindivDto;
 import com.cht.procurementManagement.entities.Admindiv;
 import com.cht.procurementManagement.services.admin.AdminService;
 import org.springframework.http.HttpStatus;
@@ -20,33 +21,33 @@ public class AdmindivController {
     
     //create admin div
     @PostMapping("/admindivs")
-    public ResponseEntity<Admindiv> createAdmindiv(@RequestBody Admindiv admindiv){
-        Admindiv createdAdmindiv = adminService.createAdmindiv(admindiv);
-        if(createdAdmindiv == null){
+    public ResponseEntity<AdmindivDto> createAdmindiv(@RequestBody AdmindivDto admindivDto){
+        AdmindivDto createdAdmindivDto = adminService.createAdmindiv(admindivDto);
+        if(createdAdmindivDto == null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdAdmindiv);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdAdmindivDto);
     }
     
     //get admin div list
     @GetMapping("/admindivs")
-    public ResponseEntity<List<Admindiv>> getAdmindivs(){
+    public ResponseEntity<List<AdmindivDto>> getAdmindivs(){
         return ResponseEntity.ok(adminService.getAllAdmindivs());    }
     
     //get admin div by id
     @GetMapping("/admindivs/{id}")
-    public ResponseEntity<Admindiv> getAdmindivById(@PathVariable Long id){
+    public ResponseEntity<AdmindivDto> getAdmindivById(@PathVariable Long id){
         return ResponseEntity.ok(adminService.getAdmindivById(id));
     }
     
     //update admin div
     @PutMapping("admindivs/{id}")
-    public ResponseEntity<Admindiv> updateAdmindiv(@PathVariable Long id, @RequestBody Admindiv admindiv){
-        Admindiv updatedAdmindiv = adminService.updateAdmindiv(id, admindiv);
-        if(updatedAdmindiv == null){
+    public ResponseEntity<AdmindivDto> updateAdmindiv(@PathVariable Long id, @RequestBody AdmindivDto admindivDto){
+        AdmindivDto updatedAdmindivDto = adminService.updateAdmindiv(id, admindivDto);
+        if(updatedAdmindivDto == null){
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(updatedAdmindiv);
+        return ResponseEntity.ok(updatedAdmindivDto);
     }
     
     //delete admin div

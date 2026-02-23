@@ -286,10 +286,10 @@ public class SuppliesServiceImpl implements SuppliesService {
     private boolean checkIfSubdivIdsExist(List<Long> subdivIds){
         //count in the request
         Long uniqueInputCount = subdivIds.stream().distinct().count();
-        System.out.println(uniqueInputCount +" unique input count of give sub div list");
+
         //count in db
         Long dbCount = subdivRepository.countByIdIn(subdivIds);
-        System.out.println(dbCount +" unique sub div count from database");
+
         //compare to find if it equals
         return uniqueInputCount == dbCount;
     }

@@ -1,46 +1,26 @@
-package com.cht.procurementManagement.entities;
+package com.cht.procurementManagement.dto;
 
-import com.cht.procurementManagement.dto.AuditLogDto;
 import com.cht.procurementManagement.enums.AuditAction;
 import com.cht.procurementManagement.enums.AuditEntityType;
-import jakarta.persistence.*;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 import java.time.LocalDateTime;
 
-@Entity
-public class AuditLog {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class AuditLogDto {
     private Long id;
     private String email;
     private String employeeId;
-    @Enumerated(EnumType.STRING)
-    private AuditAction action;
-    @Enumerated(EnumType.STRING)
-    private AuditEntityType entityType;
+
+    private String action;
+
+    private String entityType;
     private Long entityId;
     private LocalDateTime timestamp;
     private String description;
 
-
-    //get dto method
-    public AuditLogDto getDto(){
-        AuditLogDto dto = new AuditLogDto();
-        dto.setId(id);
-        dto.setEmail(email);
-        dto.setEmployeeId(employeeId);
-        dto.setAction(action.name());
-        dto.setEntityType(entityType.name());
-        dto.setEntityId(entityId);
-        dto.setTimestamp(timestamp);
-        dto.setDescription(description);
-
-        return dto;
-
-    }
-
-
     //get-set methods
+
     public Long getId() {
         return id;
     }
@@ -65,19 +45,19 @@ public class AuditLog {
         this.employeeId = employeeId;
     }
 
-    public AuditAction getAction() {
+    public String getAction() {
         return action;
     }
 
-    public void setAction(AuditAction action) {
+    public void setAction(String action) {
         this.action = action;
     }
 
-    public AuditEntityType getEntityType() {
+    public String getEntityType() {
         return entityType;
     }
 
-    public void setEntityType(AuditEntityType entityType) {
+    public void setEntityType(String entityType) {
         this.entityType = entityType;
     }
 

@@ -1,9 +1,6 @@
 package com.cht.procurementManagement.services.admin;
 
-import com.cht.procurementManagement.dto.ProcurementStatusDto;
-import com.cht.procurementManagement.dto.SubdivDto;
-import com.cht.procurementManagement.dto.UserDto;
-import com.cht.procurementManagement.dto.VendorDto;
+import com.cht.procurementManagement.dto.*;
 import com.cht.procurementManagement.entities.Admindiv;
 import com.cht.procurementManagement.entities.Designation;
 
@@ -43,12 +40,12 @@ public interface AdminService {
     void deleteSubdiv(Long id);
 
 // admindiv----------------------------------------
-    Admindiv createAdmindiv(Admindiv admindiv);
-    List<Admindiv> getAllAdmindivs();
+    AdmindivDto createAdmindiv(AdmindivDto admindivDto);
+    List<AdmindivDto> getAllAdmindivs();
 
-    Admindiv getAdmindivById(Long id);
+    AdmindivDto getAdmindivById(Long id);
 
-    Admindiv updateAdmindiv(Long id, Admindiv admindiv);
+    AdmindivDto updateAdmindiv(Long id, AdmindivDto admindivDto);
 
     void deleteAdmindiv(Long id);
 

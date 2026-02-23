@@ -5,6 +5,9 @@ import com.cht.procurementManagement.dto.*;
 import java.util.List;
 
 public interface SuppliesService {
+
+    //Requests related   -----------------------------------------------------
+
     List<RequestDto> getAllRequests();
 
     List<RequestDto> getRequestsPendingSuppliesApproval();
@@ -35,4 +38,7 @@ public interface SuppliesService {
 
     //get sub div list grouped by its admindiv
     List<SubdivGroupedDto> getGroupedSubdivs();
+
+
+
 }
