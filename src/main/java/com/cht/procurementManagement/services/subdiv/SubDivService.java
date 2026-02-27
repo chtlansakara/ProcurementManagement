@@ -4,6 +4,7 @@ import com.cht.procurementManagement.dto.ApprovalDto;
 import com.cht.procurementManagement.dto.CommentDto;
 import com.cht.procurementManagement.dto.RequestDto;
 import com.cht.procurementManagement.dto.SubdivDto;
+import com.cht.procurementManagement.dto.procurement.ProcurementResponseDto;
 import com.cht.procurementManagement.entities.Admindiv;
 import com.cht.procurementManagement.entities.Subdiv;
 import com.cht.procurementManagement.services.admindiv.AdminDivService;
@@ -37,4 +38,8 @@ public interface SubDivService {
     void deleteRequestById(Long id);
 
     RequestDto updateRequestById(Long id, RequestDto requestDto);
+
+    List<ProcurementResponseDto> getAllProcurementOnlyBySubdivId();
+
+    ProcurementResponseDto getProcurementByIdForSubdiv(Long id);
 }

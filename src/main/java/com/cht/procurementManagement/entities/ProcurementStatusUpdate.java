@@ -1,6 +1,7 @@
 package com.cht.procurementManagement.entities;
 
 import com.cht.procurementManagement.dto.procurement.ProcurementStatusUpdateDto;
+import com.cht.procurementManagement.enums.ProcurementStage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
@@ -12,11 +13,14 @@ public class ProcurementStatusUpdate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String comment;
+    private Date statusChangedOn;
     private Date createdOn;
+    @Enumerated(EnumType.STRING)
+    private ProcurementStage procurementStage;
 
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "status_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
     @JsonIgnore
     private ProcurementStatus status;
 
@@ -34,7 +38,10 @@ public class ProcurementStatusUpdate {
         ProcurementStatusUpdateDto dto = new ProcurementStatusUpdateDto();
         dto.setId(id);
         dto.setComment(comment);
+        dto.setStatusChangedOn(statusChangedOn);
         dto.setCreatedOn(createdOn);
+        dto.setProcurementStage(procurementStage.toString());
+
         if (status != null) {
             dto.setProcurementStatusId(status.getId());
             dto.setProcurementStatusName(status.getName());
@@ -63,6 +70,22 @@ public class ProcurementStatusUpdate {
 
 
     //get-set methods
+
+    public ProcurementStage getProcurementStage() {
+        return procurementStage;
+    }
+
+    public void setProcurementStage(ProcurementStage procurementStage) {
+        this.procurementStage = procurementStage;
+    }
+
+    public Date getStatusChangedOn() {
+        return statusChangedOn;
+    }
+
+    public void setStatusChangedOn(Date statusChangedOn) {
+        this.statusChangedOn = statusChangedOn;
+    }
 
     public Date getCreatedOn() {
         return createdOn;

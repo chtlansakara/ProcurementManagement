@@ -1,6 +1,7 @@
 package com.cht.procurementManagement.services.requests;
 
 import com.cht.procurementManagement.dto.RequestDto;
+import com.cht.procurementManagement.entities.Admindiv;
 import com.cht.procurementManagement.entities.Request;
 import com.cht.procurementManagement.entities.Subdiv;
 import com.cht.procurementManagement.entities.User;
@@ -56,6 +57,10 @@ public class RequestServiceImpl implements  RequestService{
         //finding the sub div objects list from db
         List<Subdiv> subdivList = subdivRepository.findAllById(requestDto.getSubdivIdList());
 
+        //get the admindiv of request
+        Admindiv requestAdmindiv = subdivList.stream().map(Subdiv::getAdmindiv).findFirst()
+                .orElseThrow(() ->  new RuntimeException("Admin division of request can not be found"));
+
         //3. create a new request
         Request request = new Request();
 
@@ -80,6 +85,7 @@ public class RequestServiceImpl implements  RequestService{
         //setting objects - User & Subdiv Objects list
         request.setCreatedBy(userCreatedBy);
         request.setSubdivList(subdivList);
+        request.setAdmindiv(requestAdmindiv);
 
         //save to db & return as dto
         Request savedRequest = requestRepository.save(request);
@@ -109,6 +115,10 @@ public class RequestServiceImpl implements  RequestService{
         //finding the sub div objects list from db
             List<Subdiv> subdivList = subdivRepository.findAllById(requestDto.getSubdivIdList());
 
+        //get the admindiv of request
+        Admindiv requestAdmindiv = subdivList.stream().map(Subdiv::getAdmindiv).findFirst()
+                .orElseThrow(() ->  new RuntimeException("Admin division of request can not be found"));
+
         if(optionalRequest.isPresent()){
             //get Request object to update
             Request existingRequest = optionalRequest.get();
@@ -136,7 +146,8 @@ public class RequestServiceImpl implements  RequestService{
             existingRequest.setCreatedBy(userUpdatedBy);
             //set only if the new list is not empty - if empty doesn't change
 
-                existingRequest.setSubdivList(subdivList);
+            existingRequest.setSubdivList(subdivList);
+            existingRequest.setAdmindiv(requestAdmindiv);
 
 
             //save and return as dto

@@ -16,6 +16,8 @@ public interface SuppliesService {
 
     RequestDto getRequestById(Long requestId);
 
+    List<SubdivDto> getSubdivsByAdmindivId(Long id);
+
     RequestDto createRequestBySupplies(RequestDto requestDto);
 
     //reject a request from an admin div - create comment & change request status
@@ -38,6 +40,10 @@ public interface SuppliesService {
 
     //get sub div list grouped by its admindiv
     List<SubdivGroupedDto> getGroupedSubdivs();
+
+    List<AdmindivDto> getAllAdmindivs();
+
+    List<SubdivDto> getSubdivs();
 
 
 

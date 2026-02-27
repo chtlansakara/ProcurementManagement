@@ -5,7 +5,6 @@ import com.cht.procurementManagement.entities.*;
 import com.cht.procurementManagement.enums.UserRole;
 import com.cht.procurementManagement.repositories.*;
 import jakarta.persistence.EntityExistsException;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.expression.ExpressionException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +25,7 @@ public class AdminServiceImpl implements AdminService {
     private final UserRepository userRepository;
     private final ProcurementStatusRepository procurementStatusRepository;
     private final VendorRepository vendorRepository;
+    private final ProcurementSourceRepository procurementSourceRepository;
 
     public AdminServiceImpl(
             AdmindivRepository admindivRepository,
@@ -33,16 +33,78 @@ public class AdminServiceImpl implements AdminService {
             SubdivRepository subdivRepository,
             UserRepository userRepository,
             ProcurementStatusRepository procurementStatusRepository,
-            VendorRepository vendorRepository) {
+            VendorRepository vendorRepository,
+            ProcurementSourceRepository procurementSourceRepository) {
         this.admindivRepository = admindivRepository;
         this.designationRepository = designationRepository;
         this.subdivRepository = subdivRepository;
         this.userRepository = userRepository;
         this.procurementStatusRepository = procurementStatusRepository;
         this.vendorRepository = vendorRepository;
+        this.procurementSourceRepository = procurementSourceRepository;
     }
 
-    //Users -----------------------------------------------------------------------------
+    //Procurement Sources -----------------------------------------------------------------------------
+    //create
+    @Override
+    public ProcurementSourceDto createSource(ProcurementSourceDto procurementSourceDto){
+        //check for unique constraint on name
+        //check for unique constraints with name
+        if(procurementSourceRepository.findFirstByName(procurementSourceDto.getName()).isPresent()){
+            throw new EntityExistsException("Source name already exists");
+        }
+
+        ProcurementSource source = new ProcurementSource();
+        source.setName(procurementSourceDto.getName());
+        source.setDescription(procurementSourceDto.getDescription());
+        return procurementSourceRepository.save(source).getdto();
+    }
+
+    //update
+    @Override
+    public ProcurementSourceDto updateSource(Long id,ProcurementSourceDto procurementSourceDto){
+        ProcurementSource existingSource = procurementSourceRepository.findById(id)
+                        .orElseThrow(()->  new RuntimeException("Source not found"));
+
+        boolean isSame = existingSource.getName().equalsIgnoreCase(procurementSourceDto.getName());
+        //check if new name is already present
+        if( !isSame &&
+                procurementSourceRepository.findFirstByName(procurementSourceDto.getName()).isPresent()){
+            throw new EntityExistsException("Source name already exists");
+        }
+        existingSource.setName(procurementSourceDto.getName());
+        existingSource.setDescription(procurementSourceDto.getDescription());
+        return procurementSourceRepository.save(existingSource).getdto();
+    }
+
+    //get all
+    @Override
+    public List<ProcurementSourceDto>  getAllSources(){
+        return procurementSourceRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(ProcurementSource::getName))
+                .map(ProcurementSource::getdto)
+                .collect(Collectors.toList());
+    }
+
+    //get by id
+    @Override
+    public ProcurementSourceDto getSourceById(Long id){
+        return procurementSourceRepository.findById(id).map(ProcurementSource::getdto)
+                .orElseThrow(() -> new RuntimeException("Source not found"));
+    }
+
+    //delete
+    @Override
+    public void deleteSourceById(Long id){
+        if(procurementSourceRepository.findById(id).isEmpty()){
+            throw new RuntimeException("Source is not found");
+        }
+        procurementSourceRepository.deleteById(id);
+    }
+
+
+    //Vendors -----------------------------------------------------------------------------
 
 
     @Override
@@ -126,7 +188,6 @@ public class AdminServiceImpl implements AdminService {
     public List<ProcurementStatusDto> getProcurementStatus() {
         return procurementStatusRepository.findAll()
                 .stream()
-                .filter(status-> status.getId() != 2)
                 .sorted(Comparator.comparing(ProcurementStatus::getName))
                 .map(ProcurementStatus::getProcurementStatusDto)
                 .collect(Collectors.toList());
@@ -145,12 +206,15 @@ public class AdminServiceImpl implements AdminService {
         if(optionalProcurementStatus.isEmpty()){
             throw new RuntimeException("Status is not found");
         }
+        ProcurementStatus existing = optionalProcurementStatus.get();
+        boolean isSame = existing.getName().equalsIgnoreCase(procurementStatusDto.getName());
         //check if new name is already present
-        if(procurementStatusRepository.findFirstByName(procurementStatusDto.getName()).isPresent()){
+        if( !isSame &&
+                procurementStatusRepository.findFirstByName(procurementStatusDto.getName()).isPresent()){
             throw new EntityExistsException("Status name already exists");
         }
         //update
-        ProcurementStatus existing = optionalProcurementStatus.get();
+
         existing.setName(procurementStatusDto.getName());
         //save & return as dto
         return procurementStatusRepository.save(existing).getProcurementStatusDto();

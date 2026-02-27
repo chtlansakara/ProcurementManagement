@@ -5,9 +5,11 @@ import com.cht.procurementManagement.dto.AuthenticationResponse;
 import com.cht.procurementManagement.dto.SignupRequest;
 import com.cht.procurementManagement.dto.UserDto;
 import com.cht.procurementManagement.entities.User;
+import com.cht.procurementManagement.enums.UserRole;
 import com.cht.procurementManagement.repositories.UserRepository;
 import com.cht.procurementManagement.services.auth.AuthService;
 import com.cht.procurementManagement.services.jwt.UserService;
+import com.cht.procurementManagement.services.report.ReportService;
 import com.cht.procurementManagement.utils.JwtUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,18 +32,33 @@ public class AuthController {
     //to check token
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final ReportService reportService;
 
     public AuthController(AuthService authService,
                           UserRepository userRepository,
                           UserService userService,
                           JwtUtil jwtUtil,
-                          AuthenticationManager authenticationManager) {
+                          AuthenticationManager authenticationManager, ReportService reportService) {
         this.authService = authService;
         this.userRepository = userRepository;
         this.userService = userService;
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
+        this.reportService = reportService;
     }
+
+    //generate report
+//    @GetMapping("/generateReport/{format}")
+//    public String generateReport(@PathVariable String format){
+//        try {
+//            return reportService.exportReport(format);
+//        } catch (Exception e){
+//            throw new RuntimeException(e.getMessage());
+//        }
+//    }
+
+
+
 
     //sign up user API method
     @PostMapping("/signup")
@@ -82,7 +99,14 @@ public class AuthController {
             authenticationResponse.setJwt(jwtToken);
             authenticationResponse.setId(optionalUser.get().getId());
             authenticationResponse.setName(optionalUser.get().getName());
+            authenticationResponse.setEmail(optionalUser.get().getEmail());
             authenticationResponse.setUserRole(optionalUser.get().getUserRole());
+            if(optionalUser.get().getUserRole()!= UserRole.ADMIN) {
+                authenticationResponse.setSubdivName(optionalUser.get().getSubdiv().getName());
+                authenticationResponse.setSubdivCode(optionalUser.get().getSubdiv().getCode());
+                authenticationResponse.setAdmindivName(optionalUser.get().getAdmindiv().getName());
+                authenticationResponse.setAdmindivCode(optionalUser.get().getAdmindiv().getCode());
+            }
         }
         return authenticationResponse;
     }

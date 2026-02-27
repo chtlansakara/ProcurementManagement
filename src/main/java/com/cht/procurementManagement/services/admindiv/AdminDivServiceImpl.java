@@ -1,14 +1,13 @@
 package com.cht.procurementManagement.services.admindiv;
 
 import com.cht.procurementManagement.dto.*;
-import com.cht.procurementManagement.entities.Approval;
-import com.cht.procurementManagement.entities.Comment;
-import com.cht.procurementManagement.entities.Request;
-import com.cht.procurementManagement.entities.Subdiv;
+import com.cht.procurementManagement.dto.procurement.ProcurementResponseDto;
+import com.cht.procurementManagement.entities.*;
 import com.cht.procurementManagement.enums.ApprovalType;
 import com.cht.procurementManagement.enums.RequestStatus;
 import com.cht.procurementManagement.enums.ReviewType;
 import com.cht.procurementManagement.enums.UserRole;
+import com.cht.procurementManagement.mappers.ProcurementMapper;
 import com.cht.procurementManagement.repositories.*;
 import com.cht.procurementManagement.services.Approval.ApprovalService;
 import com.cht.procurementManagement.services.Comment.CommentService;
@@ -38,6 +37,8 @@ public class AdminDivServiceImpl implements AdminDivService {
 
     private final CommentRepository commentRepository;
     private final ApprovalRepository approvalRepository;
+    private final ProcurementMapper procurementMapper;
+    private final ProcurementRepository procurementRepository;
 
     public AdminDivServiceImpl(RequestRepository requestRepository,
                                SubdivRepository subdivRepository,
@@ -47,7 +48,9 @@ public class AdminDivServiceImpl implements AdminDivService {
                                CommentService commentService,
                                ApprovalService approvalService,
                                CommentRepository commentRepository,
-                               ApprovalRepository approvalRepository) {
+                               ApprovalRepository approvalRepository,
+                               ProcurementMapper procurementMapper,
+                               ProcurementRepository procurementRepository) {
         this.requestRepository = requestRepository;
         this.subdivRepository = subdivRepository;
         this.userRepository = userRepository;
@@ -57,6 +60,8 @@ public class AdminDivServiceImpl implements AdminDivService {
         this.approvalService = approvalService;
         this.commentRepository = commentRepository;
         this.approvalRepository = approvalRepository;
+        this.procurementMapper = procurementMapper;
+        this.procurementRepository = procurementRepository;
     }
 
 
@@ -76,6 +81,61 @@ public class AdminDivServiceImpl implements AdminDivService {
                 .map(Request::getRequestDto)
                 .collect(Collectors.toList());
     }
+
+
+
+    //get Procurements related to Admindiv requests
+    @Transactional(readOnly = true)
+    @Override
+    public List<ProcurementResponseDto> getAllProcurementOnlyByAdmindivId() {
+        List<Long> subdivIdList = subdivRepository.findByAdmindivId(getAdmindivIdofLoggedUser())
+                .stream()
+                .map(Subdiv::getId)
+                .collect(Collectors.toList());
+        //2. find requests with that sub-div ids
+        List<Long> admindivRequestIds = requestRepository.findAllRequestsOnlyBySubdivIdList(subdivIdList)
+                .stream()
+                .map(Request::getId)
+                .collect(Collectors.toList());
+
+        //get Procurement from request repository query
+        List<Procurement> admindivProcurement=procurementRepository.findByRequestIdIn(admindivRequestIds);
+
+        return procurementMapper.toResponseDtoList(admindivProcurement);
+    }
+
+    //get procurement by id - admindiv
+    @Transactional
+    @Override
+    public ProcurementResponseDto getProcurementByIdForAdmindiv(Long id) {
+        //first need to check if the procurement is related to admindiv
+        List<Long> subdivIdList = subdivRepository.findByAdmindivId(getAdmindivIdofLoggedUser())
+                .stream()
+                .map(Subdiv::getId)
+                .collect(Collectors.toList());
+        //2. find requests with that sub-div ids
+        List<Long> admindivRequestIds = requestRepository.findAllRequestsOnlyBySubdivIdList(subdivIdList)
+                .stream()
+                .map(Request::getId)
+                .collect(Collectors.toList());
+
+        //get Procurement from request repository query -> as id list
+        List<Long> admindivProcurementIds = procurementRepository.findByRequestIdIn(admindivRequestIds)
+                .stream()
+                .map(Procurement::getId)
+                .toList();
+
+        //3. check if the checking id contains in the list for subdiv
+        if(!admindivProcurementIds.contains(id)){
+            throw new RuntimeException("This procurement can not be accessed by this admin-division");
+        }
+        //then return the procurement
+        Procurement procurement = procurementRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("Procurement not found"));
+        return procurementMapper.toResponseDto(procurement);
+    }
+
+
 
 
     //get only - pending requests

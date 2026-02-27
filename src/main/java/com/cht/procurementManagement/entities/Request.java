@@ -44,6 +44,10 @@ public class Request {
     @JsonIgnore
     private User lastUpdatedBy;
 
+    @ManyToOne
+    @JoinColumn(name="request_admindiv", nullable = false)
+    private Admindiv admindiv;
+
     //Subdiv
     @ManyToMany()
     @JoinTable(
@@ -55,11 +59,6 @@ public class Request {
     private List<Subdiv> subdivList;
 
 
-    //for procurement relationship
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "procurement_id")
-    @JsonIgnore
-    private Procurement procurement;
 
 
 
@@ -108,6 +107,13 @@ public class Request {
             requestDto.setAdmindivLastUpdatedBy(lastUpdatedBy.getAdmindiv().getName());
             requestDto.setAdmindivCodeLastUpdatedBy(lastUpdatedBy.getAdmindiv().getCode());
         }
+        //admindiv
+        if(admindiv != null){
+            requestDto.setAdmindivId(admindiv.getId());
+            requestDto.setAdmindivName(admindiv.getName());
+            requestDto.setAdmindivCode(admindiv.getCode());
+            requestDto.setAdmindivResponsible(admindiv.getResponsibleDesignation().getCode());
+        }
 
 
         //sub-div
@@ -131,48 +137,26 @@ public class Request {
                             .toList());
         }
 
-        if(procurement!= null){
-            requestDto.setProcurementId(procurement.getId());
-            requestDto.setProcurementName(procurement.getName());
-            requestDto.setProcurementScheduledCommenceDate(procurement.getScheduledCommenceDate());
-            requestDto.setProcurementExpectedCompletionDate(procurement.getExpectedCompletionDate());
-            requestDto.setProcurementStatusId(procurement.getStatus().getId());
-            requestDto.setProcurementStatusName(procurement.getStatus().getName());
-        }
-
-        //sub-div
-//        if(admindivList != null){
-//            requestDto.setAdmindivIdList(
-//                    admindivList
-//                            .stream()
-//                            .map(Admindiv::getId)
-//                            .toList());
-//
-//            requestDto.setAdmindivNameList(
-//                    admindivList
-//                            .stream()
-//                            .map(Admindiv::getName)
-//                            .toList());
-//
-//            requestDto.setAdmindivCodeList(
-//                    admindivList
-//                            .stream()
-//                            .map(Admindiv::getCode)
-//                            .toList());
-//        }
-
         return requestDto;
     }
 
 
     //get-set methods
 
-    public Procurement getProcurement() {
-        return procurement;
+//    public Procurement getProcurement() {
+//        return procurement;
+//    }
+//
+//    public void setProcurement(Procurement procurement) {
+//        this.procurement = procurement;
+//    }
+
+    public Admindiv getAdmindiv() {
+        return admindiv;
     }
 
-    public void setProcurement(Procurement procurement) {
-        this.procurement = procurement;
+    public void setAdmindiv(Admindiv admindiv) {
+        this.admindiv = admindiv;
     }
 
     public Date getLastUpdatedDate() {

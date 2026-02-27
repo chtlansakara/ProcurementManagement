@@ -1,12 +1,14 @@
 package com.cht.procurementManagement.services.supplies;
 
 import com.cht.procurementManagement.dto.*;
+import com.cht.procurementManagement.entities.Admindiv;
 import com.cht.procurementManagement.entities.Request;
 import com.cht.procurementManagement.entities.Subdiv;
 import com.cht.procurementManagement.enums.ApprovalType;
 import com.cht.procurementManagement.enums.RequestStatus;
 import com.cht.procurementManagement.enums.ReviewType;
 import com.cht.procurementManagement.enums.UserRole;
+import com.cht.procurementManagement.repositories.AdmindivRepository;
 import com.cht.procurementManagement.repositories.RequestRepository;
 import com.cht.procurementManagement.repositories.SubdivRepository;
 import com.cht.procurementManagement.repositories.UserRepository;
@@ -18,10 +20,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +34,7 @@ public class SuppliesServiceImpl implements SuppliesService {
     private final CommentService commentService;
     private final RequestService requestService;
     private final ApprovalService approvalService;
+    private final AdmindivRepository admindivRepository;
 
     public SuppliesServiceImpl(RequestRepository requestRepository,
                                AuthService authService,
@@ -42,7 +42,8 @@ public class SuppliesServiceImpl implements SuppliesService {
                                SubdivRepository subdivRepository,
                                CommentService commentService,
                                RequestService requestService,
-                               ApprovalService approvalService) {
+                               ApprovalService approvalService,
+                               AdmindivRepository admindivRepository) {
         this.requestRepository = requestRepository;
         this.authService = authService;
         this.userRepository = userRepository;
@@ -50,6 +51,7 @@ public class SuppliesServiceImpl implements SuppliesService {
         this.commentService = commentService;
         this.requestService = requestService;
         this.approvalService = approvalService;
+        this.admindivRepository = admindivRepository;
     }
 
     //get all requests
@@ -93,6 +95,34 @@ public class SuppliesServiceImpl implements SuppliesService {
         return requestService.getRequestById(requestId);
     }
 
+
+    @Override
+    public List<SubdivDto> getSubdivsByAdmindivId(Long id) {
+        return subdivRepository.findByAdmindivId(id)
+                .stream()
+                .sorted(Comparator.comparing(Subdiv::getCode))
+                .map(Subdiv::getSubdivDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<AdmindivDto> getAllAdmindivs() {
+        return admindivRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Admindiv::getCode))
+                .map(Admindiv::getAdmindivDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SubdivDto> getSubdivs() {
+        return subdivRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Subdiv::getCode))
+                .map(Subdiv::getSubdivDto)
+                .collect(Collectors.toList());
+    }
+
     //create request
     @Override
     public RequestDto createRequestBySupplies(RequestDto requestDto) {
@@ -103,6 +133,11 @@ public class SuppliesServiceImpl implements SuppliesService {
             //check if sub divs exist in db
             if(!checkIfSubdivIdsExist(requestDto.getSubdivIdList())) {
                 throw new RuntimeException("Some sub divisions entered may not exist!");
+            }
+
+            //check if all selected sub divs selected to one admin division
+            if(!checkIfSubdivIdsForOneAdmindiv(requestDto.getSubdivIdList())){
+                throw new RuntimeException("Sub-divisions must belong to one admin-division");
             }
 
 
@@ -204,6 +239,11 @@ public class SuppliesServiceImpl implements SuppliesService {
                 throw new RuntimeException("Some sub divisions entered may not exist!");
             }
 
+            //check if all selected sub divs selected to one admin division
+            if(!checkIfSubdivIdsForOneAdmindiv(requestDto.getSubdivIdList())){
+                throw new RuntimeException("Sub-divisions must belong to one admin-division");
+            }
+
             //3. set status of request
             requestDto.setStatus(RequestStatus.PENDING_PROCUREMENT);
 
@@ -292,5 +332,11 @@ public class SuppliesServiceImpl implements SuppliesService {
 
         //compare to find if it equals
         return uniqueInputCount == dbCount;
+    }
+
+
+    private boolean checkIfSubdivIdsForOneAdmindiv(List<Long> subdivIds){
+        Long  count = subdivRepository.countDistinctAdminDivisions(subdivIds);
+        return count ==1;
     }
 }

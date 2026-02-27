@@ -1,15 +1,14 @@
 package com.cht.procurementManagement.services.subdiv;
 
 import com.cht.procurementManagement.dto.*;
+import com.cht.procurementManagement.dto.procurement.ProcurementResponseDto;
+import com.cht.procurementManagement.entities.Procurement;
 import com.cht.procurementManagement.entities.Request;
 import com.cht.procurementManagement.entities.Subdiv;
-import com.cht.procurementManagement.entities.User;
 import com.cht.procurementManagement.enums.RequestStatus;
 import com.cht.procurementManagement.enums.UserRole;
-import com.cht.procurementManagement.repositories.AdmindivRepository;
-import com.cht.procurementManagement.repositories.RequestRepository;
-import com.cht.procurementManagement.repositories.SubdivRepository;
-import com.cht.procurementManagement.repositories.UserRepository;
+import com.cht.procurementManagement.mappers.ProcurementMapper;
+import com.cht.procurementManagement.repositories.*;
 import com.cht.procurementManagement.services.Approval.ApprovalService;
 import com.cht.procurementManagement.services.Comment.CommentService;
 import com.cht.procurementManagement.services.auth.AuthService;
@@ -20,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 @Service
@@ -36,6 +34,8 @@ public class SubDivServiceImpl implements SubDivService {
     private final CommentService commentService;
     private final ApprovalService approvalService;
     private final AdmindivRepository admindivRepository;
+    private final ProcurementMapper procurementMapper;
+    private final ProcurementRepository procurementRepository;
     public SubDivServiceImpl(UserRepository userRepository,
                              SubdivRepository subdivRepository,
                              RequestRepository requestRepository,
@@ -43,7 +43,9 @@ public class SubDivServiceImpl implements SubDivService {
                              RequestService requestService,
                              CommentService commentService,
                              ApprovalService approvalService,
-                             AdmindivRepository admindivRepository) {
+                             AdmindivRepository admindivRepository,
+                             ProcurementMapper procurementMapper,
+                             ProcurementRepository procurementRepository) {
         this.userRepository = userRepository;
         this.subdivRepository = subdivRepository;
         this.requestRepository = requestRepository;
@@ -52,6 +54,8 @@ public class SubDivServiceImpl implements SubDivService {
         this.commentService = commentService;
         this.approvalService = approvalService;
         this.admindivRepository = admindivRepository;
+        this.procurementMapper = procurementMapper;
+        this.procurementRepository = procurementRepository;
     }
 
     @Transactional
@@ -83,6 +87,47 @@ public class SubDivServiceImpl implements SubDivService {
                 .sorted(Comparator.comparing(Request::getId).reversed())
                 .map(Request::getRequestDto)
                 .collect(Collectors.toList());
+    }
+
+    //get Procurements related to Subdiv requests
+    @Transactional(readOnly = true)
+    @Override
+    public List<ProcurementResponseDto> getAllProcurementOnlyBySubdivId() {
+        List<Long> subdivRequestIds = requestRepository.findAllRequestsOnlyBySubdivId(getSubdivIdofLoggedUser())
+                .stream()
+                .map(Request::getId)
+                .collect(Collectors.toList());
+        //get Procurement from request repository query
+        List<Procurement> subdivProcurement= procurementRepository.findByRequestIdIn(subdivRequestIds);
+
+        return procurementMapper.toResponseDtoList(subdivProcurement);
+
+
+    }
+
+    //get procurement by id - subdiv
+    @Transactional
+    @Override
+    public ProcurementResponseDto getProcurementByIdForSubdiv(Long id) {
+        //first need to check if the procurement is related to subdiv
+        //1. find requests related to admin div -> as id list
+        List<Long> subdivRequestIds = requestRepository.findAllRequestsOnlyBySubdivId(getSubdivIdofLoggedUser())
+                .stream()
+                .map(Request::getId)
+                .collect(Collectors.toList());
+        //2.get Procurement from request repository query -> as procurement id list
+        List<Long> subdivProcurementIds= procurementRepository.findByRequestIdIn(subdivRequestIds)
+                .stream()
+                .map(Procurement::getId)
+                .toList();
+        //3. check if the checking id contains in the list for subdiv
+        if(!subdivProcurementIds.contains(id)){
+            throw new RuntimeException("This procurement can not be accessed by this sub-division");
+        }
+        //then return the procurement
+        Procurement procurement = procurementRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("Procurement not found"));
+        return procurementMapper.toResponseDto(procurement);
     }
 
 

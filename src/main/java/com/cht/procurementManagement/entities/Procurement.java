@@ -1,5 +1,6 @@
 package com.cht.procurementManagement.entities;
 
+import com.cht.procurementManagement.enums.ProcurementStage;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -16,7 +17,6 @@ public class Procurement {
     private Long quantity;
     private BigDecimal estimatedAmount;
     private String category;
-    private String source;
     private String donorName;
     private String method;
     private String authorityLevel;
@@ -41,16 +41,26 @@ public class Procurement {
     @ManyToOne(fetch = FetchType.EAGER, optional = true)
     @JoinColumn(name = "procurement_assignedTo")
     private User assignedTo;
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @Enumerated(EnumType.STRING)
+    private ProcurementStage procurementStage;
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "procurement_status")
     private ProcurementStatus status;
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "procurement_vendor")
     private Vendor vendor;
 
+    @OneToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "request_id")
+    private Request request;
+
+    @ManyToOne
+    @JoinColumn(name = "procurement_source")
+    private ProcurementSource source;
+
     //owning side is Request
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "procurement")
-    private List<Request> requestList;
+//    @OneToMany(fetch = FetchType.EAGER, mappedBy = "procurement")
+//    private List<Request> requestList;
 
 //objects set by backend
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
@@ -112,14 +122,6 @@ public class Procurement {
 
     public void setCategory(String category) {
         this.category = category;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
     }
 
     public String getDonorName() {
@@ -226,6 +228,14 @@ public class Procurement {
         this.assignedTo = assignedTo;
     }
 
+    public ProcurementStage getProcurementStage() {
+        return procurementStage;
+    }
+
+    public void setProcurementStage(ProcurementStage procurementStage) {
+        this.procurementStage = procurementStage;
+    }
+
     public ProcurementStatus getStatus() {
         return status;
     }
@@ -242,12 +252,20 @@ public class Procurement {
         this.vendor = vendor;
     }
 
-    public List<Request> getRequestList() {
-        return requestList;
+    public Request getRequest() {
+        return request;
     }
 
-    public void setRequestList(List<Request> requestList) {
-        this.requestList = requestList;
+    public void setRequest(Request request) {
+        this.request = request;
+    }
+
+    public ProcurementSource getSource() {
+        return source;
+    }
+
+    public void setSource(ProcurementSource source) {
+        this.source = source;
     }
 
     public User getCreatedBy() {

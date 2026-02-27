@@ -1,8 +1,6 @@
 package com.cht.procurementManagement.controllers.supplies;
 
-import com.cht.procurementManagement.dto.ApprovalDto;
-import com.cht.procurementManagement.dto.CommentDto;
-import com.cht.procurementManagement.dto.RequestDto;
+import com.cht.procurementManagement.dto.*;
 import com.cht.procurementManagement.services.requests.RequestService;
 import com.cht.procurementManagement.services.supplies.SuppliesService;
 import org.springframework.http.HttpStatus;
@@ -72,16 +70,6 @@ public class SuppliesController {
         }
     }
 
-    //get all subdivs
-    //get subdiv list
-    @GetMapping("/subdivs")
-    public ResponseEntity<?> getSubdivList(){
-        try{
-            return ResponseEntity.ok(suppliesService.getGroupedSubdivs());
-        }catch(Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
 
 
 
@@ -133,4 +121,36 @@ public class SuppliesController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+
+    @GetMapping("/subdivs/admindiv/{id}")
+    public ResponseEntity<List<SubdivDto>> getSubdivsByAdmindivId(@PathVariable  Long id){
+        return ResponseEntity.ok(suppliesService.getSubdivsByAdmindivId(id));
+    }
+
+    //get all subdivs
+    //get subdiv list
+    @GetMapping("/grouped-subdivs")
+    public ResponseEntity<?> getGroupedSubdivList(){
+        try{
+            return ResponseEntity.ok(suppliesService.getGroupedSubdivs());
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //get subdiv list
+    @GetMapping("/subdivs")
+    public ResponseEntity<List<SubdivDto>> getSubdivs(){
+        return ResponseEntity.ok(suppliesService.getSubdivs());
+    }
+
+
+    //get admin div list
+    @GetMapping("/admindivs")
+    public ResponseEntity<List<AdmindivDto>> getAdmindivs(){
+        return ResponseEntity.ok(suppliesService.getAllAdmindivs());    }
+
+
+
 }

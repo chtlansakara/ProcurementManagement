@@ -1,15 +1,14 @@
 package com.cht.procurementManagement.controllers.admindiv;
 
-import com.cht.procurementManagement.dto.ApprovalDto;
-import com.cht.procurementManagement.dto.CommentDto;
-import com.cht.procurementManagement.dto.RequestDto;
-import com.cht.procurementManagement.dto.UserDto;
+import com.cht.procurementManagement.dto.*;
 import com.cht.procurementManagement.services.admindiv.AdminDivService;
 import com.cht.procurementManagement.services.auth.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.cht.procurementManagement.services.procurement.ProcurementService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admindiv")
@@ -19,11 +18,64 @@ public class AdmindivUserController {
     private final AdminDivService adminDivService;
 
     private final AuthService authService;
+    private final ProcurementService procurementService;
 
-    public AdmindivUserController(AdminDivService adminDivService, AuthService authService) {
+    public AdmindivUserController(AdminDivService adminDivService,
+                                  AuthService authService,
+                                  ProcurementService procurementService) {
         this.adminDivService = adminDivService;
         this.authService = authService;
+        this.procurementService = procurementService;
     }
+
+    //get procurement of admindiv
+    @GetMapping("/procurement")
+    public ResponseEntity<?> getProcurementOfAdmindiv(){
+        try {
+            return ResponseEntity.ok(adminDivService.getAllProcurementOnlyByAdmindivId());
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //get procurement by id
+    @GetMapping("/procurement/{id}")
+    public ResponseEntity<?> getProcurementOfAdmindivById(@PathVariable Long id){
+        try {
+            return ResponseEntity.ok(adminDivService. getProcurementByIdForAdmindiv(id));
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    //get procurement status list
+    @GetMapping("/procurement-status")
+    public ResponseEntity<List<ProcurementStatusDto>> getProcurementStatus(){
+
+        return ResponseEntity.ok(procurementService.getProcurementStatusList());
+    }
+
+    //get requests list for procurement
+    @GetMapping("/procurement-requests")
+    public ResponseEntity<List<RequestDto>> getRequestsForUpdateProcurement(){
+        return ResponseEntity.ok(procurementService.getRequestsForUpdateProcurement());
+    }
+
+    //get status -updates for a procurement
+    @GetMapping("/procurement-status/{id}")
+    public ResponseEntity<?> getStatusUpdates(@PathVariable Long id){
+        return ResponseEntity.ok(procurementService.getStatusUpdatesByProcurementId(id));
+    }
+
+    //get-stages list for filter
+    @GetMapping("/procurement-stages")
+    public ResponseEntity<List<String>> getProcurementStages(){
+        return ResponseEntity.ok(procurementService.getProcurmentStagesList());
+    }
+
+
+//    request related.......
+
 
     //get ONLY admin div requests
     @GetMapping("/requests")

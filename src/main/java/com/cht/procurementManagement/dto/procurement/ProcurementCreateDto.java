@@ -10,7 +10,7 @@ public class ProcurementCreateDto {
     private Long quantity;
     private BigDecimal estimatedAmount;
     private String category;
-    private String source;
+
     private String donorName;
     private String method;
     private String authorityLevel;
@@ -21,13 +21,32 @@ public class ProcurementCreateDto {
     private Date expectedCompletionDate;
 
     //representing objects
+    private Long requestId;
+    //    private List<Long> requestIdList;
     private Long assignedToUserId;
     private Long statusId;
     private Long vendorId;
-    private List<Long> requestIdList;
+    private Long sourceId;
+
 
     //get-set methods
 
+
+    public Long getSourceId() {
+        return sourceId;
+    }
+
+    public void setSourceId(Long sourceId) {
+        this.sourceId = sourceId;
+    }
+
+    public Long getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(Long requestId) {
+        this.requestId = requestId;
+    }
 
     public String getNumber() {
         return number;
@@ -69,13 +88,7 @@ public class ProcurementCreateDto {
         this.category = category;
     }
 
-    public String getSource() {
-        return source;
-    }
 
-    public void setSource(String source) {
-        this.source = source;
-    }
 
     public String getDonorName() {
         return donorName;
@@ -165,11 +178,11 @@ public class ProcurementCreateDto {
         this.vendorId = vendorId;
     }
 
-    public List<Long> getRequestIdList() {
-        return requestIdList;
-    }
-
-    public void setRequestIdList(List<Long> requestIdList) {
-        this.requestIdList = requestIdList;
-    }
+//    public List<Long> getRequestIdList() {
+//        return requestIdList;
+//    }
+//
+//    public void setRequestIdList(List<Long> requestIdList) {
+//        this.requestIdList = requestIdList;
+//    }
 }

@@ -30,6 +30,7 @@ public class RequestDto {
 
     private Date lastUpdatedDate;
 
+
     //represent created by User
     private Long userIdCreatedBy;
     private String emailCreatedBy;
@@ -53,6 +54,12 @@ public class RequestDto {
     private String admindivLastUpdatedBy;
     private String admindivCodeLastUpdatedBy;
 
+    //represent the admindiv
+    private Long admindivId;
+    private String admindivName;
+    private String admindivCode;
+    private String admindivResponsible;
+
 
     //represent sub-division
     private List<Long> subdivIdList;
@@ -61,13 +68,13 @@ public class RequestDto {
 
 
     //represent its procurement if there
-    private Long procurementId;
-    private String procurementName;
-
-    private Date procurementScheduledCommenceDate;
-    private Date procurementExpectedCompletionDate;
-    private Long procurementStatusId;
-    private String procurementStatusName;
+//    private Long procurementId;
+//    private String procurementName;
+//
+//    private Date procurementScheduledCommenceDate;
+//    private Date procurementExpectedCompletionDate;
+//    private Long procurementStatusId;
+//    private String procurementStatusName;
 
     //represent admin-division
 //    private List<Long> admindivIdList;
@@ -75,53 +82,85 @@ public class RequestDto {
 //    private List<String> admindivCodeList;
 
     //get-set methods
+//
+//    public Long getProcurementStatusId() {
+//        return procurementStatusId;
+//    }
+//
+//    public void setProcurementStatusId(Long procurementStatusId) {
+//        this.procurementStatusId = procurementStatusId;
+//    }
+//
+//    public String getProcurementStatusName() {
+//        return procurementStatusName;
+//    }
+//
+//    public void setProcurementStatusName(String procurementStatusName) {
+//        this.procurementStatusName = procurementStatusName;
+//    }
+//
+//    public Long getProcurementId() {
+//        return procurementId;
+//    }
+//
+//    public void setProcurementId(Long procurementId) {
+//        this.procurementId = procurementId;
+//    }
+//
+//    public String getProcurementName() {
+//        return procurementName;
+//    }
+//
+//    public void setProcurementName(String procurementName) {
+//        this.procurementName = procurementName;
+//    }
+//
+//    public Date getProcurementScheduledCommenceDate() {
+//        return procurementScheduledCommenceDate;
+//    }
+//
+//    public void setProcurementScheduledCommenceDate(Date procurementScheduledCommenceDate) {
+//        this.procurementScheduledCommenceDate = procurementScheduledCommenceDate;
+//    }
+//
+//    public Date getProcurementExpectedCompletionDate() {
+//        return procurementExpectedCompletionDate;
+//    }
+//
+//    public void setProcurementExpectedCompletionDate(Date procurementExpectedCompletionDate) {
+//        this.procurementExpectedCompletionDate = procurementExpectedCompletionDate;
+//    }
 
-    public Long getProcurementStatusId() {
-        return procurementStatusId;
+    public Long getAdmindivId() {
+        return admindivId;
     }
 
-    public void setProcurementStatusId(Long procurementStatusId) {
-        this.procurementStatusId = procurementStatusId;
+    public void setAdmindivId(Long admindivId) {
+        this.admindivId = admindivId;
     }
 
-    public String getProcurementStatusName() {
-        return procurementStatusName;
+    public String getAdmindivName() {
+        return admindivName;
     }
 
-    public void setProcurementStatusName(String procurementStatusName) {
-        this.procurementStatusName = procurementStatusName;
+    public void setAdmindivName(String admindivName) {
+        this.admindivName = admindivName;
     }
 
-    public Long getProcurementId() {
-        return procurementId;
+    public String getAdmindivCode() {
+        return admindivCode;
     }
 
-    public void setProcurementId(Long procurementId) {
-        this.procurementId = procurementId;
+    public void setAdmindivCode(String admindivCode) {
+        this.admindivCode = admindivCode;
     }
 
-    public String getProcurementName() {
-        return procurementName;
+    public String getAdmindivResponsible() {
+        return admindivResponsible;
     }
 
-    public void setProcurementName(String procurementName) {
-        this.procurementName = procurementName;
-    }
-
-    public Date getProcurementScheduledCommenceDate() {
-        return procurementScheduledCommenceDate;
-    }
-
-    public void setProcurementScheduledCommenceDate(Date procurementScheduledCommenceDate) {
-        this.procurementScheduledCommenceDate = procurementScheduledCommenceDate;
-    }
-
-    public Date getProcurementExpectedCompletionDate() {
-        return procurementExpectedCompletionDate;
-    }
-
-    public void setProcurementExpectedCompletionDate(Date procurementExpectedCompletionDate) {
-        this.procurementExpectedCompletionDate = procurementExpectedCompletionDate;
+    public void setAdmindivResponsible(String admindivResponsible) {
+        this.admindivResponsible = admindivResponsible;
     }
 
     public Date getLastUpdatedDate() {

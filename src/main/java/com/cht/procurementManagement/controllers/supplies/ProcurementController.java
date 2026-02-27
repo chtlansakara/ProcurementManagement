@@ -112,4 +112,14 @@ public class ProcurementController {
     public ResponseEntity<List<RequestDto>> getRequestsForUpdateProcurement(){
         return ResponseEntity.ok(procurementService.getRequestsForUpdateProcurement());
     }
+    @GetMapping("/procurement-sources")
+    public ResponseEntity<List<ProcurementSourceDto>> getProcurementSources(){
+        return ResponseEntity.ok(procurementService.getProcurementSources());
+    }
+
+    @GetMapping("/procurement-stages")
+    public ResponseEntity<List<String>> getProcurementStages(){
+        return ResponseEntity.ok(procurementService.getProcurmentStagesList());
+    }
+
 }

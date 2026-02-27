@@ -54,7 +54,7 @@ public class StatusController {
     }
 
     @DeleteMapping("/status/{id}")
-    public ResponseEntity<?> deleteRequest(@PathVariable Long id){
+    public ResponseEntity<?> deleteStatus(@PathVariable Long id){
         try {
             adminService.deleteProcurementStatus(id);
             return ResponseEntity.ok(null);

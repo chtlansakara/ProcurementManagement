@@ -7,6 +7,12 @@ import com.cht.procurementManagement.entities.Designation;
 import java.util.List;
 
 public interface AdminService {
+//Procurement Source  ----------------------------
+ProcurementSourceDto createSource(ProcurementSourceDto procurementSourceDto);
+ProcurementSourceDto updateSource(Long id,ProcurementSourceDto procurementSourceDto);
+List<ProcurementSourceDto>  getAllSources();
+ProcurementSourceDto getSourceById(Long id);
+    void deleteSourceById(Long id);
 //vendor ----------------------------
     VendorDto createVendor(VendorDto vendorDto);
     List<VendorDto> getVendors();

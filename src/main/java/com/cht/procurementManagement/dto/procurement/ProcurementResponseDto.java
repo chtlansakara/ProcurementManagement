@@ -13,7 +13,7 @@ public class ProcurementResponseDto {
     private Long quantity;
     private BigDecimal estimatedAmount;
     private String category;
-    private String source;
+    private String procurementStage;
     private String donorName;
     private String method;
     private String authorityLevel;
@@ -22,8 +22,16 @@ public class ProcurementResponseDto {
     private String vendorDetails;
     private Date scheduledCommenceDate;
     private Date expectedCompletionDate;
+    private Date commencedDate;
+    private Date completedDate;
 
     //representing objects
+    //source
+    private Long sourceId;
+    private String sourceName;
+    private String sourceDescription;
+
+
     //assigned to -User
     private Long assignedToUserId;
     private String assignedToUserEmail;
@@ -42,8 +50,33 @@ public class ProcurementResponseDto {
     private String VendorComments;
 
     //request list-Request List
-    private List<Long> requestIdList;
-    private List<String> requestTitleList;
+//    private List<Long> requestIdList;
+//    private List<String> requestTitleList;
+
+
+
+    private Long requestId;
+    private String requestTitle;
+    private String requestFund;
+    private String requestEstimation;
+    private Date requestApprovedDate;
+    private Date requestCreatedDate;
+    //from the authorizedBy
+    private String requestApprovedBy;
+
+    private Long requestAdmindivId;
+    private String requestAdmindivName;
+    private String requestAdmindivCode;
+    private String requestAdmindivResponsible;
+
+    private Long requestUserIdCreatedBy;
+    private String requestUserEmailCreatedBy;
+    private String requestEmployeeIdCreatedBy;
+    private String requestSubdivCodeCreatedBy;
+    private String requestAdmindivCodeCreatedBy;
+    private List<Long> requestSubdivIdList;
+    private List<String> requestSubdivNameList;
+    private List<String> requestSubdivCodeList;
 
 
     private Date createdOn;
@@ -77,7 +110,213 @@ public class ProcurementResponseDto {
 
 
     //get-set methods
+    public String getProcurementStage() {
+        return procurementStage;
+    }
 
+    public Long getRequestAdmindivId() {
+        return requestAdmindivId;
+    }
+
+    public void setRequestAdmindivId(Long requestAdmindivId) {
+        this.requestAdmindivId = requestAdmindivId;
+    }
+
+    public String getRequestAdmindivName() {
+        return requestAdmindivName;
+    }
+
+    public void setRequestAdmindivName(String requestAdmindivName) {
+        this.requestAdmindivName = requestAdmindivName;
+    }
+
+    public String getRequestAdmindivCode() {
+        return requestAdmindivCode;
+    }
+
+    public void setRequestAdmindivCode(String requestAdmindivCode) {
+        this.requestAdmindivCode = requestAdmindivCode;
+    }
+
+    public String getRequestAdmindivResponsible() {
+        return requestAdmindivResponsible;
+    }
+
+    public void setRequestAdmindivResponsible(String requestAdmindivResponsible) {
+        this.requestAdmindivResponsible = requestAdmindivResponsible;
+    }
+
+    public void setProcurementStage(String procurementStage) {
+        this.procurementStage = procurementStage;
+    }
+
+    public String getRequestEmployeeIdCreatedBy() {
+        return requestEmployeeIdCreatedBy;
+    }
+
+    public void setRequestEmployeeIdCreatedBy(String requestEmployeeIdCreatedBy) {
+        this.requestEmployeeIdCreatedBy = requestEmployeeIdCreatedBy;
+    }
+
+    public Long getSourceId() {
+        return sourceId;
+    }
+
+    public void setSourceId(Long sourceId) {
+        this.sourceId = sourceId;
+    }
+
+    public String getSourceName() {
+        return sourceName;
+    }
+
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
+    }
+
+    public String getSourceDescription() {
+        return sourceDescription;
+    }
+
+    public void setSourceDescription(String sourceDescription) {
+        this.sourceDescription = sourceDescription;
+    }
+
+    public Long getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(Long requestId) {
+        this.requestId = requestId;
+    }
+
+    public String getRequestTitle() {
+        return requestTitle;
+    }
+
+    public void setRequestTitle(String requestTitle) {
+        this.requestTitle = requestTitle;
+    }
+
+    public String getRequestFund() {
+        return requestFund;
+    }
+
+    public void setRequestFund(String requestFund) {
+        this.requestFund = requestFund;
+    }
+
+    public String getRequestEstimation() {
+        return requestEstimation;
+    }
+
+    public void setRequestEstimation(String requestEstimation) {
+        this.requestEstimation = requestEstimation;
+    }
+
+    public Date getRequestApprovedDate() {
+        return requestApprovedDate;
+    }
+
+    public void setRequestApprovedDate(Date requestApprovedDate) {
+        this.requestApprovedDate = requestApprovedDate;
+    }
+
+    public Date getRequestCreatedDate() {
+        return requestCreatedDate;
+    }
+
+    public void setRequestCreatedDate(Date requestCreatedDate) {
+        this.requestCreatedDate = requestCreatedDate;
+    }
+
+    public String getRequestApprovedBy() {
+        return requestApprovedBy;
+    }
+
+    public void setRequestApprovedBy(String requestApprovedBy) {
+        this.requestApprovedBy = requestApprovedBy;
+    }
+
+    public Long getRequestUserIdCreatedBy() {
+        return requestUserIdCreatedBy;
+    }
+
+    public void setRequestUserIdCreatedBy(Long requestUserIdCreatedBy) {
+        this.requestUserIdCreatedBy = requestUserIdCreatedBy;
+    }
+
+    public String getRequestUserEmailCreatedBy() {
+        return requestUserEmailCreatedBy;
+    }
+
+    public void setRequestUserEmailCreatedBy(String requestUserEmailCreatedBy) {
+        this.requestUserEmailCreatedBy = requestUserEmailCreatedBy;
+    }
+
+    public String getRequestEmployeeCreatedBy() {
+        return requestEmployeeIdCreatedBy;
+    }
+
+    public void setRequestEmployeeCreatedBy(String requestEmployeeCreatedBy) {
+        this.requestEmployeeIdCreatedBy = requestEmployeeCreatedBy;
+    }
+
+    public String getRequestSubdivCodeCreatedBy() {
+        return requestSubdivCodeCreatedBy;
+    }
+
+    public void setRequestSubdivCodeCreatedBy(String requestSubdivCodeCreatedBy) {
+        this.requestSubdivCodeCreatedBy = requestSubdivCodeCreatedBy;
+    }
+
+    public String getRequestAdmindivCodeCreatedBy() {
+        return requestAdmindivCodeCreatedBy;
+    }
+
+    public void setRequestAdmindivCodeCreatedBy(String requestAdmindivCodeCreatedBy) {
+        this.requestAdmindivCodeCreatedBy = requestAdmindivCodeCreatedBy;
+    }
+
+    public List<Long> getRequestSubdivIdList() {
+        return requestSubdivIdList;
+    }
+
+    public void setRequestSubdivIdList(List<Long> requestSubdivIdList) {
+        this.requestSubdivIdList = requestSubdivIdList;
+    }
+
+    public List<String> getRequestSubdivNameList() {
+        return requestSubdivNameList;
+    }
+
+    public void setRequestSubdivNameList(List<String> requestSubdivNameList) {
+        this.requestSubdivNameList = requestSubdivNameList;
+    }
+
+    public List<String> getRequestSubdivCodeList() {
+        return requestSubdivCodeList;
+    }
+
+    public void setRequestSubdivCodeList(List<String> requestSubdivCodeList) {
+        this.requestSubdivCodeList = requestSubdivCodeList;
+    }
+
+    public Date getCommencedDate() {
+        return commencedDate;
+    }
+
+    public void setCommencedDate(Date commencedDate) {
+        this.commencedDate = commencedDate;
+    }
+
+    public Date getCompletedDate() {
+        return completedDate;
+    }
+
+    public void setCompletedDate(Date completedDate) {
+        this.completedDate = completedDate;
+    }
 
     public String getDesignationCreatedBy() {
         return designationCreatedBy;
@@ -303,14 +542,6 @@ public class ProcurementResponseDto {
         this.category = category;
     }
 
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
-    }
-
     public String getDonorName() {
         return donorName;
     }
@@ -463,21 +694,21 @@ public class ProcurementResponseDto {
         VendorComments = vendorComments;
     }
 
-    public List<Long> getRequestIdList() {
-        return requestIdList;
-    }
-
-    public void setRequestIdList(List<Long> requestIdList) {
-        this.requestIdList = requestIdList;
-    }
-
-    public List<String> getRequestTitleList() {
-        return requestTitleList;
-    }
-
-    public void setRequestTitleList(List<String> requestTitleList) {
-        this.requestTitleList = requestTitleList;
-    }
+//    public List<Long> getRequestIdList() {
+//        return requestIdList;
+//    }
+//
+//    public void setRequestIdList(List<Long> requestIdList) {
+//        this.requestIdList = requestIdList;
+//    }
+//
+//    public List<String> getRequestTitleList() {
+//        return requestTitleList;
+//    }
+//
+//    public void setRequestTitleList(List<String> requestTitleList) {
+//        this.requestTitleList = requestTitleList;
+//    }
 
 
 }

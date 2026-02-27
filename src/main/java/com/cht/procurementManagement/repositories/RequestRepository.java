@@ -1,5 +1,6 @@
 package com.cht.procurementManagement.repositories;
 
+import com.cht.procurementManagement.entities.Procurement;
 import com.cht.procurementManagement.entities.Request;
 import com.cht.procurementManagement.services.requests.RequestService;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -47,5 +48,14 @@ public interface RequestRepository extends JpaRepository<Request,Long> {
             WHERE s.id IN :subdivIds)
             """)
     List<Request> findAllRequestsOnlyBySubdivIdList(@Param("subdivIds") List<Long> subdivIds);
+
+    //get prccurement with a certain requestId list
+//    @Query("""
+//            SELECT DISTINCT r.procurement
+//            FROM Request r
+//            WHERE r.id IN:requestIds
+//            """)
+//    List<Procurement> findAllProcurementByRequestIdList(List<Long> requestIds);
+
 
 }

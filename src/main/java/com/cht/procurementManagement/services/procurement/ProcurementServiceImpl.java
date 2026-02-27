@@ -1,17 +1,11 @@
 package com.cht.procurementManagement.services.procurement;
 
-import com.cht.procurementManagement.dto.ProcurementStatusDto;
-import com.cht.procurementManagement.dto.RequestDto;
-import com.cht.procurementManagement.dto.UserDto;
-import com.cht.procurementManagement.dto.VendorDto;
+import com.cht.procurementManagement.dto.*;
 import com.cht.procurementManagement.dto.procurement.ProcurementCreateDto;
 import com.cht.procurementManagement.dto.procurement.ProcurementResponseDto;
 import com.cht.procurementManagement.dto.procurement.ProcurementStatusUpdateDto;
 import com.cht.procurementManagement.entities.*;
-import com.cht.procurementManagement.enums.AuditAction;
-import com.cht.procurementManagement.enums.AuditEntityType;
-import com.cht.procurementManagement.enums.RequestStatus;
-import com.cht.procurementManagement.enums.UserRole;
+import com.cht.procurementManagement.enums.*;
 import com.cht.procurementManagement.mappers.ProcurementMapper;
 import com.cht.procurementManagement.repositories.*;
 import com.cht.procurementManagement.services.auth.AuthService;
@@ -19,10 +13,7 @@ import com.cht.procurementManagement.utils.AuditService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 @Service
 public class ProcurementServiceImpl implements ProcurementService{
@@ -36,6 +27,7 @@ public class ProcurementServiceImpl implements ProcurementService{
     private final AuditService auditService;
 
     private final ProcurementStatusUpdateRepository procurementStatusUpdateRepository;
+    private final ProcurementSourceRepository procurementSourceRepository;
 
 
     public ProcurementServiceImpl(ProcurementMapper procurementMapper,
@@ -46,7 +38,8 @@ public class ProcurementServiceImpl implements ProcurementService{
                                   AuthService authService,
                                   ProcurementRepository procurementRepository,
                                   AuditService auditService,
-                                  ProcurementStatusUpdateRepository procurementStatusUpdateRepository) {
+                                  ProcurementStatusUpdateRepository procurementStatusUpdateRepository,
+                                  ProcurementSourceRepository procurementSourceRepository) {
         this.procurementMapper = procurementMapper;
         this.userRepository = userRepository;
         this.procurementStatusRepository = procurementStatusRepository;
@@ -56,6 +49,7 @@ public class ProcurementServiceImpl implements ProcurementService{
         this.procurementRepository = procurementRepository;
         this.auditService = auditService;
         this.procurementStatusUpdateRepository = procurementStatusUpdateRepository;
+        this.procurementSourceRepository = procurementSourceRepository;
     }
 
     @Override
@@ -68,6 +62,20 @@ public class ProcurementServiceImpl implements ProcurementService{
                 .map(ProcurementStatus::getProcurementStatusDto)
                 .collect(Collectors.toList());
     }
+    @Override
+    public List<ProcurementSourceDto> getProcurementSources(){
+        return procurementSourceRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(ProcurementSource::getName))
+                .map(ProcurementSource::getdto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getProcurmentStagesList() {
+        return Arrays.stream(ProcurementStage.values()).map(Enum::name).collect(Collectors.toList());
+    }
+
 
     @Override
     public List<UserDto> getAssignedToUsersList() {
@@ -115,26 +123,33 @@ public class ProcurementServiceImpl implements ProcurementService{
             //set
             procurement.setVendor(vendor);
         }
+        //check for source
+        ProcurementSource procurementSource = procurementSourceRepository.findById(createDto.getSourceId())
+                    .orElseThrow(() -> new RuntimeException("Source is not found"));
+
+        //set source
+        procurement.setSource(procurementSource);
+
+
+
             //iii. assign Requests - List-Request
         //find if sent request list is empty
-        if(createDto.getRequestIdList() == null || createDto.getRequestIdList().isEmpty()) {
-            throw new RuntimeException("Requests list is empty");
+        if(createDto.getRequestId() == null ) {
+            throw new RuntimeException("Request is empty");
         }
         //validate request ids - using class method
-        List<Request> requests= validateAsValidRequests(createDto.getRequestIdList(),true);
+        Request validatedRequest= validateAsValidRequest(createDto.getRequestId(),true);
         //set
-        procurement.setRequestList(requests);
+        procurement.setRequest(validatedRequest);
+
 
         //3.find and assign other backend objects
-            //i. fetch id=1 Status -ProcurementStatus
-        ProcurementStatus status = procurementStatusRepository.findById(Integer.toUnsignedLong(2))
-                        .orElseThrow(() -> new RuntimeException("Procurement status is not found"));
-        //set
-        procurement.setStatus(status);
+            //i. set procurement stage
+        procurement.setProcurementStage(ProcurementStage.PROCUREMENT_PROCESS_NOT_COMMENCED);
 
             //ii. assign createdBy -User
         User loggedUser = getLoggedUser();
-        //set
+            //set
         procurement.setCreatedBy(loggedUser);
 
         procurement.setLastUpdatedBy(loggedUser);
@@ -147,11 +162,8 @@ public class ProcurementServiceImpl implements ProcurementService{
 
 
         //7. change requests status
-        for(Request request : requests){
-            request.setStatus(RequestStatus.PROCUREMENT_CREATED);
-            request.setProcurement(savedProcurement);
-        }
-        requestRepository.saveAll(requests);
+        validatedRequest.setStatus(RequestStatus.PROCUREMENT_CREATED);
+        requestRepository.save(validatedRequest);
 
         //8. Add to audit log
         auditService.log(
@@ -161,9 +173,9 @@ public class ProcurementServiceImpl implements ProcurementService{
                 AuditEntityType.PROCUREMENT,
                 savedProcurement.getId(),
                 "Created procurement with id: "+ savedProcurement.getId() +" including request ids: "
-                        +createDto.getRequestIdList().toString()+
+                        +createDto.getRequestId()+
                         " and vendor id: "+createDto.getVendorId()+
-                        " and title: " + createDto.getName()
+                        " and name of procurement: " + createDto.getName()
         );
 
         //7.return as dto
@@ -191,15 +203,13 @@ public class ProcurementServiceImpl implements ProcurementService{
         //find the procurement - using class method
         Procurement existingProcurement = validateToUpdateDeleteProcurement(id);
 
-        //finding existing vendor name & id
+        //finding existing vendor name & id (for audit log)
         Vendor oldVendor = existingProcurement.getVendor();
         String oldVendorName = oldVendor.getName();
         Long oldVendorId = oldVendor.getId();
-        //finding existing request ids
-        List<Long> oldRequestIds = existingProcurement.getRequestList()
-                .stream()
-                .map(Request::getId)
-                .collect(Collectors.toList());
+
+        //finding existing request id
+        Long oldRequestId = existingProcurement.getRequest().getId();
 
         //5. find other objects from ids in dto
         //i. fetch new assignedTo - User
@@ -223,25 +233,32 @@ public class ProcurementServiceImpl implements ProcurementService{
             existingProcurement.setVendor(vendor);
         }
 
-        //iii. assign Requests - List-Request
-        //find if sent request list is empty
-        if(createDto.getRequestIdList() == null || createDto.getRequestIdList().isEmpty()) {
-            throw new RuntimeException("Requests list is empty");
+        //iii. assign Request
+        //find if sent request is null
+        if(createDto.getRequestId() == null ) {
+            throw new RuntimeException("Request is empty");
         }
         //validate request ids - using class method
-        List<Request> requestsNew= validateAsValidRequests(createDto.getRequestIdList(),false);
+        Request requestNew= validateAsValidRequest(createDto.getRequestId(),false);
         //if requests in the list has 'procurement created' then it should be equal to the one already in the procurement
         //i. get already procurement request list
-        List<Request> requestsOld =  existingProcurement.getRequestList();
-        for(Request request: requestsNew){
-            if(request.getStatus().equals(RequestStatus.PROCUREMENT_CREATED)){
-                if(!requestsOld.contains(request)){
-                    throw new RuntimeException("Can not select requests in other procurement");
-                }
+        Request requestOld =  existingProcurement.getRequest();
+        if(requestNew.getStatus().equals(RequestStatus.PROCUREMENT_CREATED)){
+            if(!requestNew.getId().equals(oldRequestId)){
+                throw new RuntimeException("Can not select requests in other procurement");
             }
         }
+
+
+//        for(Request request: requestsNew){
+//            if(request.getStatus().equals(RequestStatus.PROCUREMENT_CREATED)){
+//                if(!requestsOld.contains(request)){
+//                    throw new RuntimeException("Can not select requests in other procurement");
+//                }
+//            }
+//        }
         //set
-        existingProcurement.setRequestList(requestsNew);
+        existingProcurement.setRequest(requestNew);
 
         //4. update with details
         procurementMapper.updateProcurementWithDto(existingProcurement,createDto);
@@ -256,30 +273,39 @@ public class ProcurementServiceImpl implements ProcurementService{
 
         //6. save to db
         Procurement updatedProcurement = procurementRepository.save(existingProcurement);
-        //save requests with procurement number
-        for(Request request : requestsNew){
-            request.setStatus(RequestStatus.PROCUREMENT_CREATED);
-            request.setProcurement(updatedProcurement);
-        }
-        //remove procurement and status from the removed requests of existing list
-        //find removed request list
-        List<Request> removedRequests = new ArrayList<>();
-        for(Request request: requestsOld){
-            if(!requestsNew.contains(request)){
-                removedRequests.add(request);
-            }
-        }
-        //change its request status and remove procurement
-        if(!removedRequests.isEmpty()) {
-            for (Request request : removedRequests){
-                request.setStatus(RequestStatus.PENDING_PROCUREMENT);
-                request.setProcurement(null);
-            }
+        //save request status
+        if(!requestNew.getId().equals(oldRequestId)){
+            requestNew.setStatus(RequestStatus.PROCUREMENT_CREATED);
+            requestOld.setStatus(RequestStatus.PENDING_PROCUREMENT);
             //save to db
-            requestRepository.saveAll(removedRequests);
+            requestRepository.save(requestNew);
+            requestRepository.save(requestOld);
         }
 
-        requestRepository.saveAll(requestsNew);
+        //save requests with procurement number
+//        for(Request request : requestsNew){
+//            request.setStatus(RequestStatus.PROCUREMENT_CREATED);
+//            request.setProcurement(updatedProcurement);
+//        }
+        //remove procurement and status from the removed requests of existing list
+        //find removed request list
+//        List<Request> removedRequests = new ArrayList<>();
+//        for(Request request: requestsOld){
+//            if(!requestsNew.contains(request)){
+//                removedRequests.add(request);
+//            }
+//        }
+        //change its request status and remove procurement
+//        if(!removedRequests.isEmpty()) {
+//            for (Request request : removedRequests){
+//                request.setStatus(RequestStatus.PENDING_PROCUREMENT);
+//                request.setProcurement(null);
+//            }
+//            //save to db
+//            requestRepository.saveAll(removedRequests);
+//        }
+//
+//        requestRepository.saveAll(requestsNew);
 
         //7.create audit log
         auditService.log(
@@ -289,8 +315,8 @@ public class ProcurementServiceImpl implements ProcurementService{
                 AuditEntityType.PROCUREMENT,
                 updatedProcurement.getId(),
                 "Updated procurement with id:" +id + " included request ids: "+
-                        oldRequestIds + " and vendor id: " + oldVendorId + " and name: "+ oldVendorName +
-                        " updated to include request ids: " +createDto.getRequestIdList()+
+                        oldRequestId + " and vendor id: " + oldVendorId + " and name: "+ oldVendorName +
+                        " updated to include request ids: " +createDto.getRequestId()+
                         " and vendor id: "+createDto.getVendorId()
 
         );
@@ -300,7 +326,7 @@ public class ProcurementServiceImpl implements ProcurementService{
 
 
     }
-    //for update form - we need request list with two status
+    //for update form - we need request list with either approved or in procurement
     @Transactional
     @Override
     public List<RequestDto> getRequestsForUpdateProcurement() {
@@ -319,6 +345,7 @@ public class ProcurementServiceImpl implements ProcurementService{
     @Transactional
     @Override
     public ProcurementStatusUpdateDto updateStatus(Long procurementId, ProcurementStatusUpdateDto statusUpdateDto) {
+        ProcurementStatus newStatus = null;
 
         //1. find procurement to update
         Procurement existingProcurement = procurementRepository.findById(procurementId)
@@ -338,32 +365,84 @@ public class ProcurementServiceImpl implements ProcurementService{
             throw new RuntimeException("The procurement is not allowed to be updated by this user!");
         }
 
+        //extra - check if procurement is already completed
+        if(existingProcurement.getCompletedDate() != null){
+            throw new RuntimeException("Can not update status as the procurement is already completed.");
+        }
+
         //4. find the status
-        if(existingProcurement.getStatus().getId().equals(statusUpdateDto.getProcurementStatusId())){
-            throw new RuntimeException("Can not select the same status.");
+        //find stage selected
+        if(statusUpdateDto.getProcurementStage() == null){
+            throw new RuntimeException("The stage should be selected");
         }
-        if(statusUpdateDto.getProcurementStatusId() == null){
-            throw new RuntimeException("The status should be selected");
+
+
+        //save previous values for audit log before updating (for audit log)
+        String previousStage = existingProcurement.getProcurementStage().toString();
+
+
+    //taking care of status added
+        if(statusUpdateDto.getProcurementStatusId() != null) {
+            //if existing stage and status is selected again
+            if(existingProcurement.getStatus() != null && existingProcurement.getStatus().getId().equals(statusUpdateDto.getProcurementStatusId())) {
+                throw new RuntimeException("Can not select the same status.");
+            }
+
+            ProcurementStatus changedStatus = procurementStatusRepository.findById(statusUpdateDto.getProcurementStatusId())
+                    .orElseThrow(() -> new RuntimeException("Status selected is not found"));
+            //change
+            existingProcurement.setStatus(changedStatus);
+            //save to method variable
+            newStatus = changedStatus;
+        }else{
+            //remove status if not added to update-status
+            existingProcurement.setStatus(null);
         }
-        ProcurementStatus changedStatus = procurementStatusRepository.findById(statusUpdateDto.getProcurementStatusId())
-                .orElseThrow(() -> new RuntimeException("Status selected is not found"));
+
+
+        //extra - check if the stage changed to completed - add completed date to procurement
+        boolean isCompletedStage = statusUpdateDto.getProcurementStage().equals(ProcurementStage.PAID_AND_COMPLETED.toString());
+        //set completed date of procurement if it is
+        if(isCompletedStage){
+            Date completedDate = statusUpdateDto.getStatusChangedOn() != null ?
+                    statusUpdateDto.getStatusChangedOn() : new Date();
+            existingProcurement.setCompletedDate(completedDate);
+        }
+
+        //extra - check if status is changed to commenced - add commenced date to procurement
+        boolean isCommencedStage = statusUpdateDto.getProcurementStage().equals(ProcurementStage.PURCHASE_PROCESS_COMMENCED.toString());
+        //set completed date of procurement if it is
+        if(isCommencedStage){
+            Date commencedDate = statusUpdateDto.getStatusChangedOn() != null ?
+                    statusUpdateDto.getStatusChangedOn() : new Date();
+            existingProcurement.setCommencedDate(commencedDate);
+        }
 
         //5. find the updating user
         User updatedBy = userRepository.findById(loggedUserId)
                 .orElseThrow(()-> new RuntimeException("Logged user not found"));
 
 
-        //5.update the status of procurement
-        //save previous values for audit log before updating
-        String previousStatus = existingProcurement.getStatus().getName();
-        //change
-        existingProcurement.setStatus(changedStatus);
+        //5.update the stage of procurement
+       existingProcurement.setProcurementStage(ProcurementStage.valueOf(statusUpdateDto.getProcurementStage()));
+
 
         //6. create new statusUpdate object
         ProcurementStatusUpdate statusUpdate= new ProcurementStatusUpdate();
         statusUpdate.setComment(statusUpdateDto.getComment());
+        //if date is given, set or set current date
+        if(statusUpdateDto.getStatusChangedOn()== null){
+            statusUpdate.setStatusChangedOn(new Date());
+        }else{
+            statusUpdate.setStatusChangedOn(statusUpdateDto.getStatusChangedOn());
+        }
+        //set createdOn
         statusUpdate.setCreatedOn(new Date());
-        statusUpdate.setStatus(changedStatus);
+        //if status is given
+        if(newStatus != null) {
+            statusUpdate.setStatus(newStatus);
+        }
+        statusUpdate.setProcurementStage(ProcurementStage.valueOf(statusUpdateDto.getProcurementStage()));
         statusUpdate.setProcurement(existingProcurement);
         statusUpdate.setCreatedBy(updatedBy);
 
@@ -375,6 +454,8 @@ public class ProcurementServiceImpl implements ProcurementService{
         Procurement savedProcurement = procurementRepository.save(existingProcurement);
         ProcurementStatusUpdate savedStatusUpdate = procurementStatusUpdateRepository.save(statusUpdate);
 
+
+
         //7. add to audit log
         auditService.log(
                 updatedBy.getEmail(),
@@ -382,8 +463,9 @@ public class ProcurementServiceImpl implements ProcurementService{
                 AuditAction.STATUS_CHANGED,
                 AuditEntityType.PROCUREMENT,
                 savedProcurement.getId(),
-                "Status of procurement " +procurementId + " updated  from status: "+
-                       previousStatus + " to status: " + changedStatus.getName() +" ,with comments '"+
+                "Status of procurement " +procurementId + " updated  from stage: "+
+                       previousStage + " to stage: " + savedStatusUpdate.getProcurementStage().toString() +
+                       " with comments '"+
                         statusUpdateDto.getComment() + "'."
 
         );
@@ -407,18 +489,26 @@ public class ProcurementServiceImpl implements ProcurementService{
     @Transactional
     public void deleteProcurement(Long id) {
         Procurement existingProcurement = validateToUpdateDeleteProcurement(id);
-        //update related requests
-        List<Request> requests = existingProcurement.getRequestList();
+        //update related request
+        Request request = requestRepository.findById(existingProcurement.getRequest().getId())
+                .orElseThrow(() -> new RuntimeException("Related request is not found"));
+        //change status of request
+        request.setStatus(RequestStatus.PENDING_PROCUREMENT);
+        //save to db
+        requestRepository.save(request);
+
+
         //find request objects
-        List<Long> requestIds = requests.stream().map(Request::getId).collect(Collectors.toList());
-        List<Request> existingRequests = requestRepository.findAllById(requestIds);
-        //update status of requests
-        for(Request request : existingRequests){
-            request.setStatus(RequestStatus.PENDING_PROCUREMENT);
-            request.setProcurement(null);
-        }
-        //save requests in db
-        requestRepository.saveAll(existingRequests);
+//        List<Long> requestIds = requests.stream().map(Request::getId).collect(Collectors.toList());
+//        List<Request> existingRequests = requestRepository.findAllById(requestIds);
+//        //update status of requests
+//        for(Request request : existingRequests){
+//            request.setStatus(RequestStatus.PENDING_PROCUREMENT);
+//            request.setProcurement(null);
+//        }
+//        //save requests in db
+//        requestRepository.saveAll(existingRequests);
+
         //delete procurement
         procurementRepository.deleteById(id);
         //create audit log
@@ -429,8 +519,8 @@ public class ProcurementServiceImpl implements ProcurementService{
                 AuditAction.DELETED,
                 AuditEntityType.PROCUREMENT,
                 id,
-                "Deleted procurement including request ids: "
-                        +requestIds+
+                "Deleted procurement including request id: "
+                        + request.getId()+
                         " ,and title: "+existingProcurement.getName()
         );
     }
@@ -440,10 +530,9 @@ public class ProcurementServiceImpl implements ProcurementService{
         Procurement existingProcurement = procurementRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Procurement is not found"));
 
-        //2.check for correct status of procurement (id=2) - not commenced yet
-        ProcurementStatus status = procurementStatusRepository.findById(Integer.toUnsignedLong(2))
-                .orElseThrow(() -> new RuntimeException("Status not found"));
-        if(!existingProcurement.getStatus().equals(status)){
+        //2.check for correct stage (not completed)
+        ProcurementStage stage = existingProcurement.getProcurementStage();
+        if(stage.equals(ProcurementStage.PAID_AND_COMPLETED)) {
             throw new RuntimeException("This procurement can not be updated/deleted");
         }
 
@@ -462,36 +551,44 @@ public class ProcurementServiceImpl implements ProcurementService{
     }
 
 
-    private List<Request> validateAsValidRequests(List<Long> requestIds, boolean isCreate){
-        //find request objects
-        List<Request> requests = requestRepository.findAllById(requestIds);
+    private Request validateAsValidRequest(Long requestId, boolean isCreate){
+        //find request object
+        Request request = requestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Request selected is not found"));
 
-        if(requests.size() != requestIds.size()){
-            throw new RuntimeException("Some requests are not found");
-        }
+//        if(requests.size() != requestIds.size()){
+//            throw new RuntimeException("Some requests are not found");
+//        }
 
         if(isCreate) {
+            if(!request.getStatus().equals(RequestStatus.PENDING_PROCUREMENT)){
+                throw new RuntimeException("Request is not ready for procurement");
+            }
 
             //check for correct status of each request - should be pe
-            requests.stream()
-                    .filter(request -> !request.getStatus().equals(RequestStatus.PENDING_PROCUREMENT))
-                    .findFirst()
-                    .ifPresent(invalidRequest -> {
-                        throw new RuntimeException("Some requests are not ready for procurement");
-                    });
+//            requests.stream()
+//                    .filter(request -> !request.getStatus().equals(RequestStatus.PENDING_PROCUREMENT))
+//                    .findFirst()
+//                    .ifPresent(invalidRequest -> {
+//                        throw new RuntimeException("Some requests are not ready for procurement");
+//                    });
         }else{
+            if(!request.getStatus().equals(RequestStatus.PENDING_PROCUREMENT) &&
+            !(request.getStatus().equals(RequestStatus.PROCUREMENT_CREATED))){
+                throw new RuntimeException("Request can not be added for procurement");
+            }
             //check for 2 correct status of each request - the one already have should be allowed -
-            requests.stream()
-                    .filter(request ->
-                            !request.getStatus().equals(RequestStatus.PROCUREMENT_CREATED)
-                            && !request.getStatus().equals(RequestStatus.PENDING_PROCUREMENT))
-                    .findFirst()
-                    .ifPresent(invalidRequest -> {
-                        throw new RuntimeException("Some requests can not be added for a procurement.");
-                    });
+//            requests.stream()
+//                    .filter(request ->
+//                            !request.getStatus().equals(RequestStatus.PROCUREMENT_CREATED)
+//                            && !request.getStatus().equals(RequestStatus.PENDING_PROCUREMENT))
+//                    .findFirst()
+//                    .ifPresent(invalidRequest -> {
+//                        throw new RuntimeException("Some requests can not be added for a procurement.");
+//                    });
         }
 
-        return requests;
+        return request;
 
 
 //        //count ids sent

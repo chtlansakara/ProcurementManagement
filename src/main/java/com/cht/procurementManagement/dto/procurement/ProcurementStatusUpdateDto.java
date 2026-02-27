@@ -7,7 +7,13 @@ import java.util.Date;
 public class ProcurementStatusUpdateDto {
     private Long id;
     private String comment;
+    private String procurementStage;
+
+
+
+    private Date statusChangedOn;
     private Date createdOn;
+
 
     //representing related ProcurementStatus
     private Long procurementStatusId;
@@ -35,6 +41,22 @@ public class ProcurementStatusUpdateDto {
 
     //get-set methods
 
+
+    public String getProcurementStage() {
+        return procurementStage;
+    }
+
+    public void setProcurementStage(String procurementStage) {
+        this.procurementStage = procurementStage;
+    }
+
+    public Date getStatusChangedOn() {
+        return statusChangedOn;
+    }
+
+    public void setStatusChangedOn(Date statusChangedOn) {
+        this.statusChangedOn = statusChangedOn;
+    }
 
     public Long getId() {
         return id;

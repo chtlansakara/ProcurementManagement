@@ -6,6 +6,7 @@ import com.cht.procurementManagement.entities.Procurement;
 import com.cht.procurementManagement.entities.Request;
 import com.cht.procurementManagement.entities.Subdiv;
 import com.cht.procurementManagement.entities.User;
+import com.cht.procurementManagement.enums.ProcurementStage;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +26,7 @@ public class ProcurementMapper {
         responseDto.setQuantity(procurement.getQuantity());
         responseDto.setEstimatedAmount(procurement.getEstimatedAmount());
         responseDto.setCategory(procurement.getCategory());
-        responseDto.setSource(procurement.getSource());
+
         responseDto.setDonorName(procurement.getDonorName());
         responseDto.setMethod(procurement.getMethod());
         responseDto.setAuthorityLevel(procurement.getAuthorityLevel());
@@ -36,6 +37,10 @@ public class ProcurementMapper {
         responseDto.setExpectedCompletionDate(procurement.getExpectedCompletionDate());
         responseDto.setCreatedOn(procurement.getCreatedOn());
         responseDto.setLastUpdatedOn(procurement.getLastUpdatedOn());
+        responseDto.setCommencedDate(procurement.getCommencedDate());
+        responseDto.setCompletedDate(procurement.getCompletedDate());
+        //setting stage
+        responseDto.setProcurementStage(procurement.getProcurementStage().toString());
         //for objects
         //assigned to
         if (procurement.getAssignedTo() != null) {
@@ -59,18 +64,57 @@ public class ProcurementMapper {
             responseDto.setVendorRegisteredDate(procurement.getVendor().getRegisteredDate());
             responseDto.setVendorComments(procurement.getVendor().getComments());
         }
+        //source
+        if(procurement.getSource() != null){
+            responseDto.setSourceId(procurement.getSource().getId());
+            responseDto.setSourceName(procurement.getSource().getName());
+            responseDto.setSourceDescription(procurement.getSource().getDescription());
+        }
         //request list
-        if (procurement.getRequestList() != null) {
-            responseDto.setRequestIdList(procurement.getRequestList()
-                    .stream()
-                    .map(Request::getId)
-                    .collect(Collectors.toList()));
+//        if (procurement.getRequestList() != null) {
+//            responseDto.setRequestIdList(procurement.getRequestList()
+//                    .stream()
+//                    .map(Request::getId)
+//                    .collect(Collectors.toList()));
+//
+//            responseDto.setRequestTitleList(procurement.getRequestList()
+//                    .stream()
+//                    .map(Request::getTitle)
+//                    .collect(Collectors.toList()));
+//        }
+        if(procurement.getRequest() != null){
+            responseDto.setRequestId(procurement.getRequest().getId());
+            responseDto.setRequestTitle(procurement.getRequest().getTitle());
+            responseDto.setRequestFund(procurement.getRequest().getFund());
+            responseDto.setRequestEstimation(procurement.getRequest().getEstimation());
+            responseDto.setRequestApprovedDate(procurement.getRequest().getApprovedDate());
+            responseDto.setRequestCreatedDate(procurement.getRequest().getCreatedDate());
+            responseDto.setRequestApprovedBy(procurement.getRequest().getAuthorizedBy());
 
-            responseDto.setRequestTitleList(procurement.getRequestList()
+            responseDto.setRequestAdmindivId(procurement.getRequest().getAdmindiv().getId());
+            responseDto.setRequestAdmindivCode(procurement.getRequest().getAdmindiv().getCode());
+            responseDto.setRequestAdmindivName(procurement.getRequest().getAdmindiv().getName());
+            responseDto.setRequestAdmindivResponsible(procurement.getRequest().getAdmindiv().getResponsibleDesignation().getCode());
+
+            responseDto.setRequestUserIdCreatedBy(procurement.getRequest().getCreatedBy().getId());
+            responseDto.setRequestUserEmailCreatedBy(procurement.getRequest().getCreatedBy().getEmail());
+            responseDto.setRequestEmployeeCreatedBy(procurement.getRequest().getCreatedBy().getEmployeeId());
+            responseDto.setRequestSubdivCodeCreatedBy(procurement.getRequest().getCreatedBy().getSubdiv().getCode());
+            responseDto.setRequestAdmindivCodeCreatedBy(procurement.getRequest().getCreatedBy().getAdmindiv().getCode());
+            responseDto.setRequestSubdivIdList(procurement.getRequest().getSubdivList()
                     .stream()
-                    .map(Request::getTitle)
+                    .map(Subdiv::getId).collect(Collectors.toList()));
+            responseDto.setRequestSubdivCodeList(procurement.getRequest().getSubdivList()
+                    .stream()
+                    .map(Subdiv::getCode)
+                    .collect(Collectors.toList()));
+            responseDto.setRequestSubdivNameList(procurement.getRequest().getSubdivList()
+                    .stream()
+                    .map(Subdiv::getName)
                     .collect(Collectors.toList()));
         }
+
+
         if(procurement.getCreatedBy() != null){
             responseDto.setUserIdCreatedBy(procurement.getCreatedBy().getId());
             responseDto.setEmailCreatedBy(procurement.getCreatedBy().getEmail());
@@ -112,7 +156,7 @@ public class ProcurementMapper {
         procurement.setQuantity(dto.getQuantity());
         procurement.setEstimatedAmount(dto.getEstimatedAmount());
         procurement.setCategory(dto.getCategory());
-        procurement.setSource(dto.getSource());
+
         procurement.setDonorName(dto.getDonorName());
         procurement.setMethod(dto.getMethod());
         procurement.setAuthorityLevel(dto.getAuthorityLevel());
@@ -121,6 +165,7 @@ public class ProcurementMapper {
         procurement.setVendorDetails(dto.getVendorDetails());
         procurement.setScheduledCommenceDate(dto.getScheduledCommenceDate());
         procurement.setExpectedCompletionDate(dto.getExpectedCompletionDate());
+
 
         return procurement;
     }
@@ -139,7 +184,7 @@ public class ProcurementMapper {
         procurement.setQuantity(dto.getQuantity());
         procurement.setEstimatedAmount(dto.getEstimatedAmount());
         procurement.setCategory(dto.getCategory());
-        procurement.setSource(dto.getSource());
+
         procurement.setDonorName(dto.getDonorName());
         procurement.setMethod(dto.getMethod());
         procurement.setAuthorityLevel(dto.getAuthorityLevel());

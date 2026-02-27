@@ -4,6 +4,7 @@ import com.cht.procurementManagement.dto.ApprovalDto;
 import com.cht.procurementManagement.dto.CommentDto;
 import com.cht.procurementManagement.dto.RequestDto;
 import com.cht.procurementManagement.dto.SubdivDto;
+import com.cht.procurementManagement.dto.procurement.ProcurementResponseDto;
 import com.cht.procurementManagement.entities.Request;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +50,10 @@ public interface AdminDivService {
 
     //get subdiv list
     List<SubdivDto> getSubdivList();
+
+    //get procurement
+    List<ProcurementResponseDto> getAllProcurementOnlyByAdmindivId();
+    ProcurementResponseDto getProcurementByIdForAdmindiv(Long id);
 
 
 }
