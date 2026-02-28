@@ -8,6 +8,7 @@ import com.cht.procurementManagement.repositories.CommentRepository;
 import com.cht.procurementManagement.repositories.RequestRepository;
 import com.cht.procurementManagement.repositories.UserRepository;
 import com.cht.procurementManagement.services.auth.AuthService;
+import com.cht.procurementManagement.services.notification.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -25,15 +26,17 @@ public class CommentServiceImpl implements  CommentService{
     private final CommentRepository commentRepository;
     //to set user created by
     private final AuthService authService;
+    private final NotificationService notificationService;
 
     public CommentServiceImpl(UserRepository userRepository,
                               RequestRepository requestRepository,
                               CommentRepository commentRepository,
-                              AuthService authService) {
+                              AuthService authService, NotificationService notificationService) {
         this.userRepository = userRepository;
         this.requestRepository = requestRepository;
         this.commentRepository = commentRepository;
         this.authService = authService;
+        this.notificationService = notificationService;
     }
 
     //create comment
@@ -61,6 +64,10 @@ public class CommentServiceImpl implements  CommentService{
             comment.setCreatedBy(userCreatedBy);
             //setting request
             comment.setRequest(optionalRequest.get());
+
+            //send notification
+            notificationService.onRequestRejection(optionalRequest.get(), commentDto.getType());
+
             //save to db & return as dto
             return commentRepository.save(comment).getCommentDto();
         }else{

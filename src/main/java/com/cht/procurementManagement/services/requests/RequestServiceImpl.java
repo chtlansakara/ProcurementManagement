@@ -5,11 +5,12 @@ import com.cht.procurementManagement.entities.Admindiv;
 import com.cht.procurementManagement.entities.Request;
 import com.cht.procurementManagement.entities.Subdiv;
 import com.cht.procurementManagement.entities.User;
-import com.cht.procurementManagement.enums.RequestStatus;
+import com.cht.procurementManagement.enums.AuditEntityType;
 import com.cht.procurementManagement.repositories.RequestRepository;
 import com.cht.procurementManagement.repositories.SubdivRepository;
 import com.cht.procurementManagement.repositories.UserRepository;
 import com.cht.procurementManagement.services.auth.AuthService;
+import com.cht.procurementManagement.services.notification.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,16 +28,19 @@ public class RequestServiceImpl implements  RequestService{
     private final UserRepository userRepository;
     private final SubdivRepository subdivRepository;
     private final AuthService authService;
+    private final NotificationService notificationService;
 
     public RequestServiceImpl(RequestRepository requestRepository,
                               UserRepository userRepository,
                               SubdivRepository subdivRepository,
-                              AuthService authService) {
+                              AuthService authService,
+                              NotificationService notificationService) {
         this.requestRepository = requestRepository;
         this.userRepository = userRepository;
         this.subdivRepository = subdivRepository;
 
         this.authService = authService;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -89,6 +93,10 @@ public class RequestServiceImpl implements  RequestService{
 
         //save to db & return as dto
         Request savedRequest = requestRepository.save(request);
+
+        //send notifications service the saved request object
+        notificationService.onRequestSubmitted(savedRequest);
+
         return savedRequest.getRequestDto();
     }
 
@@ -158,6 +166,7 @@ public class RequestServiceImpl implements  RequestService{
 
     //USED ONE
     @Override
+    @Transactional
     public RequestDto updateRequest(Request request, RequestDto requestDto) {
 
         //4. get logged User object
@@ -200,6 +209,7 @@ public class RequestServiceImpl implements  RequestService{
     }
 
     //get Requests by id
+    @Transactional
     @Override
     public RequestDto getRequestById(Long requestId) {
         return requestRepository.findById(requestId)
@@ -217,7 +227,7 @@ public class RequestServiceImpl implements  RequestService{
                 .map(Request::getRequestDto)
                 .collect(Collectors.toList());
     }
-
+    @Transactional
     @Override
     public void deleteRequest(Long requestId) {
         Optional<Request> optionalRequest = requestRepository.findById(requestId);
@@ -225,12 +235,20 @@ public class RequestServiceImpl implements  RequestService{
         if(!optionalRequest.isPresent()){
             throw new RuntimeException("Request is not found");
         }
+
+        //delete related notifications
+        notificationService.deleteNotifications(AuditEntityType.REQUEST, requestId);
         requestRepository.deleteById(requestId);
+
     }
 
     //USED ONE
+    @Transactional
     @Override
     public void deleteRequest(Request request) {
+        //delete related notifications
+        notificationService.deleteNotifications(AuditEntityType.REQUEST, request.getId());
+        requestRepository.deleteById(request.getId());
         requestRepository.delete(request);
     }
 

@@ -8,6 +8,7 @@ import com.cht.procurementManagement.repositories.ApprovalRepository;
 import com.cht.procurementManagement.repositories.RequestRepository;
 import com.cht.procurementManagement.repositories.UserRepository;
 import com.cht.procurementManagement.services.auth.AuthService;
+import com.cht.procurementManagement.services.notification.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -23,14 +24,16 @@ public class ApprovalServiceImpl implements  ApprovalService{
     private final ApprovalRepository approvalRepository;
     private final RequestRepository requestRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
     public ApprovalServiceImpl(AuthService authService,
                                ApprovalRepository approvalRepository,
                                RequestRepository requestRepository,
-                               UserRepository userRepository) {
+                               UserRepository userRepository, NotificationService notificationService) {
         this.authService = authService;
         this.approvalRepository = approvalRepository;
         this.requestRepository = requestRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -63,7 +66,12 @@ public class ApprovalServiceImpl implements  ApprovalService{
             approval.setCreatedBy(userCreatedBy);
             //request
             approval.setRequest(optionalRequest.get());
-            //save to db & return as dto
+
+            //create notification & send
+            notificationService.onRequestApproval(optionalRequest.get(),approvalDto.getType());
+
+
+            // return as dto
             return approvalRepository.save(approval).getApprovalDto();
         }else{
             throw new EntityNotFoundException("Request is not found");

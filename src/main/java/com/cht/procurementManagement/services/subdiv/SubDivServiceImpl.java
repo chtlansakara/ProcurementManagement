@@ -12,6 +12,7 @@ import com.cht.procurementManagement.repositories.*;
 import com.cht.procurementManagement.services.Approval.ApprovalService;
 import com.cht.procurementManagement.services.Comment.CommentService;
 import com.cht.procurementManagement.services.auth.AuthService;
+import com.cht.procurementManagement.services.notification.NotificationService;
 import com.cht.procurementManagement.services.requests.RequestService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class SubDivServiceImpl implements SubDivService {
     private final AdmindivRepository admindivRepository;
     private final ProcurementMapper procurementMapper;
     private final ProcurementRepository procurementRepository;
+    private final NotificationService notificationService;
     public SubDivServiceImpl(UserRepository userRepository,
                              SubdivRepository subdivRepository,
                              RequestRepository requestRepository,
@@ -45,7 +47,8 @@ public class SubDivServiceImpl implements SubDivService {
                              ApprovalService approvalService,
                              AdmindivRepository admindivRepository,
                              ProcurementMapper procurementMapper,
-                             ProcurementRepository procurementRepository) {
+                             ProcurementRepository procurementRepository,
+                             NotificationService notificationService) {
         this.userRepository = userRepository;
         this.subdivRepository = subdivRepository;
         this.requestRepository = requestRepository;
@@ -56,6 +59,7 @@ public class SubDivServiceImpl implements SubDivService {
         this.admindivRepository = admindivRepository;
         this.procurementMapper = procurementMapper;
         this.procurementRepository = procurementRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -71,6 +75,7 @@ public class SubDivServiceImpl implements SubDivService {
         requestDto.setSubdivIdList(subdivList);
         //2. set the status of requestDto
         requestDto.setStatus(RequestStatus.PENDING_ADMIN_APPROVAL);
+
         //create request through request service - sets the user createdBy and created Date
         return requestService.createRequest(requestDto);
     }

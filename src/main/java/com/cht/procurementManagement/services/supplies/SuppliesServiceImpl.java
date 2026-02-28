@@ -260,8 +260,9 @@ public class SuppliesServiceImpl implements SuppliesService {
     public void deleteRequest(Long requestId) {
         //check for validation for supplies user - using class method
         Request existingRequest = validateRequestForUpdateDeleteForSuppliesUser(requestId);
+
         //delete request
-        requestRepository.deleteById(requestId);
+        requestService.deleteRequest(existingRequest);
     }
 
     @Override

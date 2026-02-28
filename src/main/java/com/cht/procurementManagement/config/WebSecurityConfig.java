@@ -44,6 +44,12 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(HttpMethod.OPTIONS).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/notifications/**").hasAnyAuthority(
+                                UserRole.ADMIN.name(),
+                                UserRole.SUPPLIESUSER.name(),
+                                UserRole.ADMINDIVUSER.name(),
+                                UserRole.SUBDIVUSER.name()
+                        )
                         .requestMatchers("/api/admin/**").hasAnyAuthority(UserRole.ADMIN.name())
                         .requestMatchers("/api/admindiv/**").hasAnyAuthority(UserRole.ADMINDIVUSER.name())
                         .requestMatchers("/api/supplies/**").hasAnyAuthority(UserRole.SUPPLIESUSER.name())
@@ -85,8 +91,8 @@ public class WebSecurityConfig {
         config.setAllowedOrigins(List.of("http://localhost:4200"));
         config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
 //        config.setAllowedHeaders(List.of("*"));
-        config.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
-        config.setExposedHeaders(List.of("Authorization"));
+        config.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "text/event-stream"));
+        config.setExposedHeaders(List.of("Authorization","Content-Type", "Cache-Control", "Connection","text/event-stream"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

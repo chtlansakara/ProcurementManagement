@@ -9,6 +9,7 @@ import com.cht.procurementManagement.enums.*;
 import com.cht.procurementManagement.mappers.ProcurementMapper;
 import com.cht.procurementManagement.repositories.*;
 import com.cht.procurementManagement.services.auth.AuthService;
+import com.cht.procurementManagement.services.notification.NotificationService;
 import com.cht.procurementManagement.utils.AuditService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ public class ProcurementServiceImpl implements ProcurementService{
 
     private final ProcurementStatusUpdateRepository procurementStatusUpdateRepository;
     private final ProcurementSourceRepository procurementSourceRepository;
+    private final NotificationService notificationService;
 
 
     public ProcurementServiceImpl(ProcurementMapper procurementMapper,
@@ -39,7 +41,7 @@ public class ProcurementServiceImpl implements ProcurementService{
                                   ProcurementRepository procurementRepository,
                                   AuditService auditService,
                                   ProcurementStatusUpdateRepository procurementStatusUpdateRepository,
-                                  ProcurementSourceRepository procurementSourceRepository) {
+                                  ProcurementSourceRepository procurementSourceRepository, NotificationService notificationService) {
         this.procurementMapper = procurementMapper;
         this.userRepository = userRepository;
         this.procurementStatusRepository = procurementStatusRepository;
@@ -50,6 +52,7 @@ public class ProcurementServiceImpl implements ProcurementService{
         this.auditService = auditService;
         this.procurementStatusUpdateRepository = procurementStatusUpdateRepository;
         this.procurementSourceRepository = procurementSourceRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -177,6 +180,9 @@ public class ProcurementServiceImpl implements ProcurementService{
                         " and vendor id: "+createDto.getVendorId()+
                         " and name of procurement: " + createDto.getName()
         );
+
+        //send notifications
+        notificationService.onProcurementCreation(savedProcurement, validatedRequest);
 
         //7.return as dto
         return procurementMapper.toResponseDto(savedProcurement);
@@ -454,7 +460,8 @@ public class ProcurementServiceImpl implements ProcurementService{
         Procurement savedProcurement = procurementRepository.save(existingProcurement);
         ProcurementStatusUpdate savedStatusUpdate = procurementStatusUpdateRepository.save(statusUpdate);
 
-
+        //send notifications
+        notificationService.onProcurementStatusChanged(existingProcurement);
 
         //7. add to audit log
         auditService.log(
@@ -509,8 +516,14 @@ public class ProcurementServiceImpl implements ProcurementService{
 //        //save requests in db
 //        requestRepository.saveAll(existingRequests);
 
+        //delete related notifications
+        notificationService.deleteNotifications(AuditEntityType.PROCUREMENT, id);
+
         //delete procurement
         procurementRepository.deleteById(id);
+
+
+
         //create audit log
         User updatedBy = getLoggedUser();
         auditService.log(
