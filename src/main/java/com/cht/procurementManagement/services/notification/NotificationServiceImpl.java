@@ -167,15 +167,17 @@ public class NotificationServiceImpl implements NotificationService{
 
         //if approved by admin div
         if(approvalType.equals(ApprovalType.ADMIN_DIV)){
-            //notify sub-division
+            //notify sub-division & supplies division
+            List<Long> recipientIds = new ArrayList<>();
             //1. find subdiv users - who created the request
-            List<Long> subdivUserIds = getSubdivUserIds(request.getCreatedBy().getSubdiv().getId());
+            recipientIds.addAll(getSubdivUserIds(request.getCreatedBy().getSubdiv().getId()));
+            recipientIds.addAll(getSuppliesUserIds());
             createAndSend(
-                    "Request #" +request.getId() + " has been approved by admin-division",
+                    "Request #" +request.getId() + " has been approved by admin-division & pending supplies-review",
                     NotificationType.REQUEST_APPROVED_BY_ADMIN,
                     request.getId(),
                     AuditEntityType.REQUEST,
-                    subdivUserIds
+                    recipientIds
             );
         }
 
@@ -186,8 +188,7 @@ public class NotificationServiceImpl implements NotificationService{
             recipientIds.addAll(getSubdivUserIds(request.getCreatedBy().getSubdiv().getId()));
             recipientIds.addAll(getAdmindivUserIds(request.getAdmindiv().getId()));
             createAndSend(
-                    "Procurement request for the sub-division  " +request.getCreatedBy().getSubdiv().getName() +
-                             "with #" +request.getId()  +
+                    "Procurement request with #" +request.getId()  +
                              "  has been approved by supplies-division",
                     NotificationType.REQUEST_APPROVED_BY_SUPPLIES,
                     request.getId(),
@@ -220,8 +221,7 @@ public class NotificationServiceImpl implements NotificationService{
             recipientIds.addAll(getSubdivUserIds(request.getCreatedBy().getSubdiv().getId()));
             recipientIds.addAll(getAdmindivUserIds(request.getAdmindiv().getId()));
             createAndSend(
-                    "Procurement request for/by the sub-division  " +request.getCreatedBy().getSubdiv().getName() +
-                            "with #" +request.getId()  +
+                    "Procurement request with #" +request.getId()  +
                             "  has been rejected by supplies-division",
                     NotificationType.REQUEST_REJECTED_BY_SUPPLIES,
                     request.getId(),
@@ -254,14 +254,30 @@ public class NotificationServiceImpl implements NotificationService{
     //when procurement status is changed
     @Override
     public void onProcurementStatusChanged(Procurement procurement){
+        String statusName = null;
+        //get stage string
+        String updatedStage = mapStage(procurement.getProcurementStage());
+        //get status if has
+        if(procurement.getStatus()!= null){
+            statusName = procurement.getStatus().getName();
+        }
+
+        String updateString = statusName!= null ? updatedStage+ " - "+ statusName: updatedStage;
+
+
+        //notify both sub-div and admin-div
+        List<Long> recipientIds = new ArrayList<>();
+        recipientIds.addAll(getSubdivUserIds(procurement.getRequest().getCreatedBy().getSubdiv().getId()));
+        recipientIds.addAll(getAdmindivUserIds(procurement.getRequest().getCreatedBy().getAdmindiv().getId()));
+
         //notify sub-division who created the request
         createAndSend(
-                "Procurement #" + procurement.getId() + " stage updated to: "+
-                        procurement.getProcurementStage(),
+                "Procurement #" + procurement.getId() + " status updated to: "+
+                        updateString,
                 NotificationType.PROCUREMENT_STATUS_UPDATE,
                 procurement.getId(),
                 AuditEntityType.PROCUREMENT,
-                getSubdivUserIds(procurement.getRequest().getCreatedBy().getSubdiv().getId())
+               recipientIds
         );
     }
 
@@ -281,6 +297,17 @@ public class NotificationServiceImpl implements NotificationService{
     //helper class method to get logged user's id
     private Long getLoggedUserId(){
         return authService.getLoggedUserDto().getId();
+    }
+
+
+    private String mapStage(ProcurementStage stage){
+        if(stage.equals(ProcurementStage.PROCUREMENT_PROCESS_NOT_COMMENCED)) return "Not Commenced yet";
+        if(stage.equals(ProcurementStage.PURCHASE_PROCESS_COMMENCED)) return "In Purchase Process";
+        if(stage.equals(ProcurementStage.PURCHASE_ORDERS_ISSUED)) return "PO Issued";
+        if(stage.equals(ProcurementStage.GOODS_RECEIVED)) return "Goods Received";
+        if(stage.equals(ProcurementStage.PAID_AND_COMPLETED)) return "Paid and Completed";
+
+        return "Undefined";
     }
 
 }

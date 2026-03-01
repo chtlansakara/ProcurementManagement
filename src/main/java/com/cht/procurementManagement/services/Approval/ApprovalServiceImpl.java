@@ -67,12 +67,14 @@ public class ApprovalServiceImpl implements  ApprovalService{
             //request
             approval.setRequest(optionalRequest.get());
 
-            //create notification & send
-            notificationService.onRequestApproval(optionalRequest.get(),approvalDto.getType());
+            Approval savedApproval =  approvalRepository.save(approval);
 
+            //create notification & send
+            notificationService.onRequestApproval(optionalRequest.get(), savedApproval.getType());
 
             // return as dto
-            return approvalRepository.save(approval).getApprovalDto();
+            return savedApproval.getApprovalDto();
+
         }else{
             throw new EntityNotFoundException("Request is not found");
         }

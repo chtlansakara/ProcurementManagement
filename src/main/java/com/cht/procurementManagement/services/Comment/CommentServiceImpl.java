@@ -65,11 +65,13 @@ public class CommentServiceImpl implements  CommentService{
             //setting request
             comment.setRequest(optionalRequest.get());
 
+            Comment savedComment = commentRepository.save(comment);
+
             //send notification
-            notificationService.onRequestRejection(optionalRequest.get(), commentDto.getType());
+            notificationService.onRequestRejection(optionalRequest.get(), savedComment.getType());
 
             //save to db & return as dto
-            return commentRepository.save(comment).getCommentDto();
+            return savedComment.getCommentDto();
         }else{
             throw new EntityNotFoundException("Request not found!");
         }

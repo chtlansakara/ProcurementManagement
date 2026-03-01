@@ -461,7 +461,7 @@ public class ProcurementServiceImpl implements ProcurementService{
         ProcurementStatusUpdate savedStatusUpdate = procurementStatusUpdateRepository.save(statusUpdate);
 
         //send notifications
-        notificationService.onProcurementStatusChanged(existingProcurement);
+        notificationService.onProcurementStatusChanged(savedProcurement);
 
         //7. add to audit log
         auditService.log(
