@@ -1,11 +1,31 @@
 package com.cht.procurementManagement.dto;
 
 import jakarta.persistence.Column;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
+//@Builder
+//@AllArgsConstructor
+//@NoArgsConstructor
 public class ProcurementSourceDto {
     private Long id;
     private String name;
     private String description;
+
+    public ProcurementSourceDto() {
+    }
+
+    public ProcurementSourceDto(Long id, String name, String description) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+    }
+    public ProcurementSourceDto( String name, String description) {
+
+        this.name = name;
+        this.description = description;
+    }
 
     //get-set methods
 

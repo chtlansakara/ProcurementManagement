@@ -74,9 +74,12 @@ public class User implements UserDetails {
         if(admindiv!= null){
             userDto.setAdmindivId(admindiv.getId());
             userDto.setAdmindivName(admindiv.getName());
+        }
+        if(designation!= null){
             userDto.setDesignationId(designation.getId());
             userDto.setDesignationCode(designation.getCode());
         }
+
 
         return userDto;
     }

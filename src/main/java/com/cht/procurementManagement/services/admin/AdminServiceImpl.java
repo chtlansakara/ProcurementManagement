@@ -5,6 +5,7 @@ import com.cht.procurementManagement.entities.*;
 import com.cht.procurementManagement.enums.UserRole;
 import com.cht.procurementManagement.repositories.*;
 import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.expression.ExpressionException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -48,7 +49,11 @@ public class AdminServiceImpl implements AdminService {
     //create
     @Override
     public ProcurementSourceDto createSource(ProcurementSourceDto procurementSourceDto){
-        //check for unique constraint on name
+        //when source name is null
+        if(procurementSourceDto.getName()==null){
+            throw new RuntimeException("Source should have a name");
+        }
+
         //check for unique constraints with name
         if(procurementSourceRepository.findFirstByName(procurementSourceDto.getName()).isPresent()){
             throw new EntityExistsException("Source name already exists");
@@ -109,14 +114,20 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public VendorDto createVendor(VendorDto vendorDto) {
+        if(vendorDto.getName() == null){
+            throw new RuntimeException("Name is required");
+        }
         //create new object
         Vendor vendor = new Vendor();
         vendor.setName(vendorDto.getName());
+
         //if date does not exist, set current date
-        if(vendorDto.getRegisteredDate() != null) {
+        if(vendorDto.getRegisteredDate() == null) {
+            vendor.setRegisteredDate(new Date());
+        }else{
             vendor.setRegisteredDate(vendorDto.getRegisteredDate());
         }
-        vendor.setRegisteredDate(new Date());
+
         vendor.setComments(vendorDto.getComments());
         //save to db & return dto
         return vendorRepository.save(vendor).getVendorDto();
@@ -134,7 +145,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public VendorDto getVendorById(Long id) {
         return vendorRepository.findById(id).map(Vendor::getVendorDto)
-                .orElseThrow(() -> new ExpressionException("Vendor with id "+id+ " is not found!"));
+                .orElseThrow(() -> new EntityNotFoundException("Vendor with id "+id+ " is not found!"));
     }
 
     @Override
@@ -142,7 +153,7 @@ public class AdminServiceImpl implements AdminService {
         //check if the vendor id exists
         Optional<Vendor> optionalVendor = vendorRepository.findById(id);
         if(optionalVendor.isEmpty()){
-            throw new RuntimeException("Vendor is not found");
+            throw new EntityNotFoundException("Vendor not found");
         }
         //update
         Vendor existing = optionalVendor.get();
@@ -160,7 +171,7 @@ public class AdminServiceImpl implements AdminService {
         //check if the vendor id exists
         Optional<Vendor> optionalVendor = vendorRepository.findById(id);
         if(optionalVendor.isEmpty()){
-            throw new RuntimeException("Vendor is not found");
+            throw new EntityNotFoundException("Vendor not found");
         }
         //delete
         vendorRepository.deleteById(id);
@@ -171,6 +182,11 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public ProcurementStatusDto createProcurementStatus(ProcurementStatusDto procurementStatusDto) {
+        //check if name is null
+        if(procurementStatusDto.getName() == null){
+            throw new RuntimeException("Status name is required");
+        }
+
         //check for unique constraints with name
         if(procurementStatusRepository.findFirstByName(procurementStatusDto.getName()).isPresent()){
             throw new EntityExistsException("Status name already exists");
@@ -196,7 +212,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public ProcurementStatusDto getProcurementStatusById(Long id) {
         return procurementStatusRepository.findById(id).map(ProcurementStatus::getProcurementStatusDto)
-                .orElseThrow(() -> new ExpressionException("Procurement status with id "+id+ " is not found!"));
+                .orElseThrow(() -> new EntityNotFoundException("Procurement status with id "+id+ " is not found!"));
     }
 
     @Override
@@ -204,7 +220,7 @@ public class AdminServiceImpl implements AdminService {
         //check if the status exists
         Optional<ProcurementStatus> optionalProcurementStatus = procurementStatusRepository.findById(id);
         if(optionalProcurementStatus.isEmpty()){
-            throw new RuntimeException("Status is not found");
+            throw new EntityNotFoundException("Status not found");
         }
         ProcurementStatus existing = optionalProcurementStatus.get();
         boolean isSame = existing.getName().equalsIgnoreCase(procurementStatusDto.getName());
@@ -225,7 +241,7 @@ public class AdminServiceImpl implements AdminService {
         //check if the status exists
         Optional<ProcurementStatus> optionalProcurementStatus = procurementStatusRepository.findById(id);
         if(optionalProcurementStatus.isEmpty()){
-            throw new RuntimeException("Status is not found");
+            throw new RuntimeException("Status not found");
         }
         //delete
         procurementStatusRepository.deleteById(id);
@@ -238,44 +254,55 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        //check for unique constraints
-//        if(userRepository.existsByEmail(userDto.getEmail())){
-//            throw new RuntimeException("Email already exists");
-//        }
 
         if(userRepository.findFirstByEmail(userDto.getEmail()).isPresent()){
             throw new EntityExistsException("Email already exists");
         }
 
+        //ids can not be null
+        if(userDto.getSubdivId() == null || userDto.getAdmindivId() == null || userDto.getDesignationId() == null) {
+            throw new RuntimeException("Sub division, Admin division & Designation are required");
+        }
+
+        //nic can not be null
+        if(userDto.getNic() == null){
+            throw new RuntimeException("NIC is required");
+        }
+
 
         //finding its sub div
-        Optional<Subdiv> optionalSubdiv = subdivRepository.findById(userDto.getSubdivId());
-        //finding its admin div
-        Optional<Admindiv> optionalAdmindiv = admindivRepository.findById(userDto.getAdmindivId());
-        //finding its designation
-        Optional<Designation> optionalDesignation = designationRepository.findById(userDto.getDesignationId());
+        Subdiv existingSubdiv = subdivRepository.findById(userDto.getSubdivId())
+                .orElseThrow(() -> new EntityNotFoundException("Sub division not found!"));
 
-        if(optionalSubdiv.isPresent() && optionalAdmindiv.isPresent() && optionalDesignation.isPresent()){
+
+        //finding its admin div
+        Admindiv existingAdmindiv = admindivRepository.findById(userDto.getAdmindivId())
+                .orElseThrow(() -> new EntityNotFoundException("Admin division not found!"));
+
+        //finding its designation
+        Designation existingDesignation = designationRepository.findById(userDto.getDesignationId())
+                .orElseThrow(() -> new EntityNotFoundException("Designation not found!"));
+
+
             User user = new User();
             user.setEmail(userDto.getEmail());
-            //map user role string to enum
+            //map user role string to enum - using class method
             user.setUserRole(mapStringToUserRole(String.valueOf(userDto.getUserRole())));
             user.setName(userDto.getName());
             user.setEmployeeId(userDto.getEmployeeId());
             user.setNic(userDto.getNic());
-            //setting password as nic automatically
+            //setting password as nic automatically - when creating
             user.setPassword( new BCryptPasswordEncoder().encode(userDto.getNic()));
             user.setTelephone(userDto.getTelephone());
             user.setBirthdate(userDto.getBirthdate());
             //setting objects
-            user.setDesignation(optionalDesignation.get());
-            user.setAdmindiv(optionalAdmindiv.get());
-            user.setSubdiv(optionalSubdiv.get());
+            user.setDesignation(existingDesignation);
+            user.setAdmindiv(existingAdmindiv);
+            user.setSubdiv(existingSubdiv);
             //saving to database & return
             User createdUser = userRepository.save(user);
             return createdUser.getUserDto();
-        }
-        return null;
+
     }
 
     //method to map user role enum with its string values
@@ -304,55 +331,67 @@ public class AdminServiceImpl implements AdminService {
     public UserDto getUserById(Long id) {
         Optional<User> optionalUser = userRepository.findById(id);
         return optionalUser.map(User::getUserDto)
-                .orElseThrow( () -> new ExpressionException("User with id "+id+ " is not found!"));
+                .orElseThrow( () -> new EntityNotFoundException("User with id "+id+ " is not found!"));
     }
 
 
     @Override
     public UserDto updateUser(Long id, UserDto userDto) {
         //find the User object
-        Optional<User> optionalUser = userRepository.findById(id);
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found!"));
 
-        //finding its admin div
-        Optional<Admindiv> optionalAdmindiv = admindivRepository.findById(userDto.getAdmindivId());
-        //finding its sub div
-        Optional<Subdiv> optionalSubdiv = subdivRepository.findById(userDto.getSubdivId());
-        //finding its designation
-        Optional<Designation> optionalDesignation = designationRepository.findById(userDto.getDesignationId());
-
-        if (optionalUser.isPresent() && optionalSubdiv.isPresent() && optionalDesignation.isPresent() && optionalAdmindiv.isPresent()) {
-            User existingUser = optionalUser.get();
+        if(!existingUser.getEmail().equals(userDto.getEmail())){
+            //check if email exists
+            if(userRepository.findFirstByEmail(userDto.getEmail()).isPresent()){
+                throw new EntityExistsException("Email already exists");
+            }
             //update with new details
             existingUser.setEmail(userDto.getEmail());
-            //change password only if there is a value provided
-            if(userDto.getPassword()!= null){
-                existingUser.setPassword(new BCryptPasswordEncoder().encode(userDto.getPassword()));
-            }
-            //map user role string to enum
-            existingUser.setUserRole(mapStringToUserRole(String.valueOf(userDto.getUserRole())));
-            existingUser.setName(userDto.getName());
-            existingUser.setEmployeeId(userDto.getEmployeeId());
-            existingUser.setNic(userDto.getNic());
-            existingUser.setTelephone(userDto.getTelephone());
-            existingUser.setBirthdate(userDto.getBirthdate());
-            //setting related objects
-            existingUser.setDesignation(optionalDesignation.get());
-            existingUser.setSubdiv(optionalSubdiv.get());
-            existingUser.setAdmindiv(optionalAdmindiv.get());
-            //saving to database & return
-            return userRepository.save(existingUser).getUserDto();
-
         }
-        return null;
+
+        //finding its sub div
+        Subdiv existingSubdiv = subdivRepository.findById(userDto.getSubdivId())
+                .orElseThrow(() -> new EntityNotFoundException("Sub division not found!"));
+
+
+        //finding its admin div
+        Admindiv existingAdmindiv = admindivRepository.findById(userDto.getAdmindivId())
+                .orElseThrow(() -> new EntityNotFoundException("Admin division not found!"));
+
+        //finding its designation
+        Designation existingDesignation = designationRepository.findById(userDto.getDesignationId())
+                .orElseThrow(() -> new EntityNotFoundException("Designation not found!"));
+
+
+
+        //change password only if there is a value provided
+        if(userDto.getPassword()!= null){
+            existingUser.setPassword(new BCryptPasswordEncoder().encode(userDto.getPassword()));
+        }
+
+        //map user role string to enum
+        existingUser.setUserRole(mapStringToUserRole(String.valueOf(userDto.getUserRole())));
+        existingUser.setName(userDto.getName());
+        existingUser.setEmployeeId(userDto.getEmployeeId());
+        existingUser.setNic(userDto.getNic());
+        existingUser.setTelephone(userDto.getTelephone());
+        existingUser.setBirthdate(userDto.getBirthdate());
+        //setting related objects
+        existingUser.setDesignation(existingDesignation);
+        existingUser.setSubdiv(existingSubdiv);
+        existingUser.setAdmindiv(existingAdmindiv);
+        //saving to database & return
+        return userRepository.save(existingUser).getUserDto();
+
+
     }
 
 
     @Override
     public void deleteUser(Long id) {
-        Optional<User> optionalUser= userRepository.findById(id);
-        if(!optionalUser.isPresent()) {
-            throw new ExpressionException("User with id "+id+ " is not found!");
-        }
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User with id "+id+ " is not found!"));
         userRepository.deleteById(id);
     }
 
@@ -365,21 +404,25 @@ public class AdminServiceImpl implements AdminService {
             throw new RuntimeException("Code already exists");
         }
 
+        if(subdivDto.getAdmindivId() == null) {
+            throw new RuntimeException("Should have an admin division");
+        }
+
         //finding its admin div
-        Optional<Admindiv> optionalAdmindiv = admindivRepository.findById(subdivDto.getAdmindivId());
-        if(optionalAdmindiv.isPresent()){
+
+        Admindiv admindiv = admindivRepository.findById(subdivDto.getAdmindivId())
+                .orElseThrow(() -> new EntityNotFoundException("Admin division is not found!"));
+
             Subdiv subdiv = new Subdiv();
-            subdiv.setId(subdivDto.getId());
             subdiv.setEmail(subdivDto.getEmail());
             subdiv.setName(subdivDto.getName());
             subdiv.setCode(subdivDto.getCode());
             subdiv.setTelephone(subdivDto.getTelephone());
             subdiv.setAddress(subdivDto.getAddress());
-            subdiv.setAdmindiv(optionalAdmindiv.get());
+            subdiv.setAdmindiv(admindiv);
             //save amd return
             return subdivRepository.save(subdiv).getSubdivDto();
-        }
-        return null;
+
     }
 
     @Override
@@ -395,11 +438,13 @@ public class AdminServiceImpl implements AdminService {
     public SubdivDto getSubdivById(Long id) {
         Optional<Subdiv> optionalSubdiv = subdivRepository.findById(id);
         return optionalSubdiv.map(Subdiv::getSubdivDto)
-                .orElseThrow( () -> new ExpressionException("Sub division with id "+id+ " is not found!"));
+                .orElseThrow( () -> new EntityNotFoundException("Sub division with id "+id+ " is not found!"));
     }
 
     @Override
     public List<SubdivDto> getSubdivsByAdmindivId(Long id) {
+        admindivRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Admin div not found!"));
         return subdivRepository.findByAdmindivId(id)
                 .stream()
                 .sorted(Comparator.comparing(Subdiv::getCode))
@@ -410,40 +455,43 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public SubdivDto updateSubdiv(Long id, SubdivDto subdivDto) {
         //check for sub div
-        Optional<Subdiv> optionalSubdiv = subdivRepository.findById(id);
+        Subdiv existingSubdiv = subdivRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Sub division is not found!"));
+
+        //check if admin div id is null
+        if(subdivDto.getAdmindivId() == null) {
+            throw new RuntimeException("Should have an admin division");
+        }
+
         //finding the admin div
-        Optional<Admindiv> optionalAdmindiv = admindivRepository.findById(subdivDto.getAdmindivId());
+        Admindiv admindiv = admindivRepository.findById(subdivDto.getAdmindivId())
+                .orElseThrow(() -> new EntityNotFoundException("Admin division is not found!"));
 
         //if both present -
-        if(optionalSubdiv.isPresent() && optionalAdmindiv.isPresent()){
-
-            //get object from optional
-            Subdiv existingSubdiv = optionalSubdiv.get();
-
-            //check for unique constraints - if not the same
-            if(!(existingSubdiv.getCode().equals(subdivDto.getCode())) && subdivRepository.existsByCode(subdivDto.getCode())){
-                throw new RuntimeException("Code already exists");
-            }
-
-
-            existingSubdiv.setEmail(subdivDto.getEmail());
-            existingSubdiv.setName(subdivDto.getName());
-            existingSubdiv.setCode(subdivDto.getCode());
-            existingSubdiv.setTelephone(subdivDto.getTelephone());
-            existingSubdiv.setAddress(subdivDto.getAddress());
-            //setting the admin div object
-            existingSubdiv.setAdmindiv(optionalAdmindiv.get());
-            //save & return as dto
-            return  subdivRepository.save(existingSubdiv).getSubdivDto();
+        //check for unique constraints - if not the same
+        if(!(existingSubdiv.getCode().equals(subdivDto.getCode()))
+                && subdivRepository.existsByCode(subdivDto.getCode())){
+            throw new RuntimeException("Code already exists");
         }
-        return null;
+
+        existingSubdiv.setEmail(subdivDto.getEmail());
+        existingSubdiv.setName(subdivDto.getName());
+        existingSubdiv.setCode(subdivDto.getCode());
+        existingSubdiv.setTelephone(subdivDto.getTelephone());
+        existingSubdiv.setAddress(subdivDto.getAddress());
+        //setting the admin div object
+        existingSubdiv.setAdmindiv(admindiv);
+        //save & return as dto
+        return  subdivRepository.save(existingSubdiv).getSubdivDto();
+
+
     }
 
     @Override
     public void deleteSubdiv(Long id) {
         Optional<Subdiv> optionalSubdiv= subdivRepository.findById(id);
         if(!optionalSubdiv.isPresent()) {
-            throw new ExpressionException("Sub division with id "+id+ " is not found!");
+            throw new EntityNotFoundException("Sub division with id "+id+ " is not found!");
         }
         subdivRepository.deleteById(id);
     }
@@ -462,9 +510,13 @@ public class AdminServiceImpl implements AdminService {
         if(admindivRepository.existsByName(admindivDto.getName())){
             throw new RuntimeException("Name already exists");
         }
+
+        if(admindivDto.getResponsibleDesignationId() == null){
+            throw new RuntimeException("Should have a designation");
+        }
         //check for designation object
         Designation responsible = designationRepository.findById((admindivDto.getResponsibleDesignationId()))
-                .orElseThrow(() -> new ExpressionException("Designation is not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Designation is not found"));
 
         Admindiv newAdmindiv = new Admindiv();
 
@@ -496,7 +548,7 @@ public class AdminServiceImpl implements AdminService {
         if(optionalAdmindiv.isPresent()) {
             return optionalAdmindiv.get().getAdmindivDto();
         }else {
-            throw new RuntimeException("Admin division with id " + id + " is not found!");
+            throw new EntityNotFoundException("Admin division with id " + id + " is not found!");
         }
 
     }
@@ -517,13 +569,16 @@ public class AdminServiceImpl implements AdminService {
                 throw new RuntimeException("Name already exists");
             }
 
-            if(admindivDto.getResponsibleDesignationId()!= null){
-                //find the designation object
-                Designation responsible = designationRepository.findById(admindivDto.getResponsibleDesignationId())
-                        .orElseThrow(() ->  new ExpressionException("Designation not found"));
-                //set the new designation
-                existingAdmindiv.setResponsibleDesignation(responsible);
+            if(admindivDto.getResponsibleDesignationId()== null){
+                throw new RuntimeException("Should have a designation");
             }
+
+            //find the designation object
+            Designation responsible = designationRepository.findById(admindivDto.getResponsibleDesignationId())
+                    .orElseThrow(() ->  new EntityNotFoundException("Designation not found"));
+            //set the new designation
+            existingAdmindiv.setResponsibleDesignation(responsible);
+
             //set other fields
             existingAdmindiv.setEmail(admindivDto.getEmail());
             existingAdmindiv.setName(admindivDto.getName());
@@ -531,15 +586,17 @@ public class AdminServiceImpl implements AdminService {
             existingAdmindiv.setTelephone(admindivDto.getTelephone());
             existingAdmindiv.setAddress(admindivDto.getAddress());
             return  admindivRepository.save(existingAdmindiv).getAdmindivDto();
+        }else{
+            throw new EntityNotFoundException("Admin div not found");
         }
-        return null;
+
     }
 
     @Override
     public void deleteAdmindiv(Long id) {
         Optional<Admindiv> optionalAdmindiv= admindivRepository.findById(id);
         if(!optionalAdmindiv.isPresent()) {
-            throw new ExpressionException("Admin division with id "+id+ " is not found!");
+            throw new EntityNotFoundException("Admin division with id "+id+ " is not found!");
         }
         admindivRepository.deleteById(id);
     }
@@ -555,7 +612,7 @@ public class AdminServiceImpl implements AdminService {
             throw new RuntimeException("Code already exists");
         }
         if(designationRepository.existsByTitle(newDesignation.getTitle())){
-            throw new RuntimeException("Title already exits");
+            throw new RuntimeException("Title already exists");
         }
 
         //check for compound unique constraints
@@ -585,33 +642,31 @@ public class AdminServiceImpl implements AdminService {
     public Designation getDesignationById(Long id) {
         //returns null if not found
         Optional<Designation> optionalDesignation = designationRepository.findById(id);
-        return optionalDesignation.orElseThrow( () -> new ExpressionException("Designation with id "+id+ " is not found!") );
+        return optionalDesignation.orElseThrow( () -> new EntityNotFoundException("Designation with id "+id+ " is not found!") );
     }
 
     //update designation
     @Override
     public Designation updateDesignation(Long id, Designation designation) {
-        Optional<Designation> optionalDesignation = designationRepository.findById(id);
-        if(optionalDesignation.isPresent()){
-            Designation existingDesignation = optionalDesignation.get();
-            //check for unique constraints - if not the same
-            if(!(existingDesignation.getCode().equals(designation.getCode())) && designationRepository.existsByCode(designation.getCode())){
-                throw new RuntimeException("Code already exists");
-            }
-            if(!(existingDesignation.getTitle().equals(designation.getTitle())) && designationRepository.existsByTitle(designation.getTitle())){
-                throw new RuntimeException("Title already exists");
-            }
+      Designation existingDesignation = designationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Designation not found"));
+
+        //check for unique constraints - if not the same as the existing
+        if(!(existingDesignation.getCode().equals(designation.getCode())) && designationRepository.existsByCode(designation.getCode())){
+            throw new RuntimeException("Code already exists");
+        }
+        if(!(existingDesignation.getTitle().equals(designation.getTitle())) && designationRepository.existsByTitle(designation.getTitle())){
+            throw new RuntimeException("Title already exists");
+        }
 
 //            if(!(existingDesignation.getTitle().equals(designation.getTitle()) && existingDesignation.getGrade().equals(designation.getGrade())) && designationRepository.existsByTitleAndGrade(designation.getTitle(), designation.getGrade())){
 //                throw new RuntimeException("Title & grade already exists");
 //            }
 
-            existingDesignation.setTitle(designation.getTitle());
-//            existingDesignation.setGrade(designation.getGrade());
-            existingDesignation.setCode(designation.getCode());
-            return  designationRepository.save(existingDesignation);
-        }
-        return null;
+        existingDesignation.setTitle(designation.getTitle());
+        existingDesignation.setCode(designation.getCode());
+        return  designationRepository.save(existingDesignation);
+
     }
 
     //delete designation
@@ -619,7 +674,7 @@ public class AdminServiceImpl implements AdminService {
     public void deleteDesignation(Long id) {
         Optional<Designation> optionalDesignation = designationRepository.findById(id);
         if(!optionalDesignation.isPresent()) {
-            throw new ExpressionException("Designation with id "+id+ " is not found!");
+            throw new EntityNotFoundException("Designation with id "+id+ " is not found!");
         }
         designationRepository.deleteById(id);
     }
