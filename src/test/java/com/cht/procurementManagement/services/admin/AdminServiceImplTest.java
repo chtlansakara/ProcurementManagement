@@ -681,7 +681,7 @@ class AdminServiceImplTest {
 
         @Test
         @DisplayName("Update vendor - successfully when id exists & has new date")
-        void testUpdateStatus_SuccessWithNewDate() throws ParseException {
+        void testUpdateVendor_SuccessWithNewDate() throws ParseException {
             //ARRANGE:
             Long vendorId = 1L;
             Date newRegisteredDate = new SimpleDateFormat("yyyy-MM-dd").parse("2025-01-15");
@@ -715,7 +715,7 @@ class AdminServiceImplTest {
         }
         @Test
         @DisplayName("Update vendor - successfully when id exists")
-        void testUpdateStatus_SuccessWithoutNewDate(){
+        void testUpdateVendor_SuccessWithoutNewDate(){
             //ARRANGE:
             Long vendorId = 1L;
 
@@ -737,20 +737,20 @@ class AdminServiceImplTest {
             assertNotNull(result);
             assertEquals(vendorId, result.getId());
             assertEquals(updatingDto.getName(), result.getName());
-            //should not be reset
-            assertNotNull(result.getRegisteredDate());
             assertEquals(updatingDto.getComments(), result.getComments());
 
             //VERIFY:
             verify(vendorRepository).findById(vendorId);
-            verify(vendorRepository).save(any(Vendor.class));
+            verify(vendorRepository).save(
+                    argThat(v -> v.getRegisteredDate().equals(vendor.getRegisteredDate()))
+            );
 
 
         }
 
         @Test
         @DisplayName("Update vendor - Throws when id doesn't exist")
-        void testUpdateStatus_ThrowsWhenIdDoesNotExist(){
+        void testUpdateVendor_ThrowsWhenIdDoesNotExist(){
             //ARRANGE:
             Long vendorId = 1L;
             //updating dto
@@ -859,16 +859,16 @@ class AdminServiceImplTest {
             assertEquals("Status name is required", exception.getMessage());
 
             //VERIFY:
-            //not executed
-            verify(procurementStatusRepository, never()).findFirstByName(dto.getName());
-            verify(procurementStatusRepository, never()).save(any(ProcurementStatus.class));
+            verifyNoInteractions(procurementStatusRepository);
         }
 
 
         //Update status method:
         //case 01: status id exists, new name doesn't exist, successfully updates & return dto
+        //case 02: status id exists, same name with different case, successfully updates
         //case 02: status id doesn't exist, throws error
         //case 03: new name already exists , throws error
+
 
         @Test
         @DisplayName("Update status - successfully when id & valid name exist")
@@ -898,6 +898,37 @@ class AdminServiceImplTest {
             verify(procurementStatusRepository).findById(statusId);
             verify(procurementStatusRepository).findFirstByName(updatingDto.getName());
             verify(procurementStatusRepository).save(any(ProcurementStatus.class));
+        }
+
+        @Test
+        @DisplayName("Update status - successfully when id exists & name in different case")
+        void testUpdateStatus_SuccessSameName(){
+            //ARRANGE:
+            Long statusId = 1L;
+            //updating dto object
+            ProcurementStatusDto updatingDto = new ProcurementStatusDto();
+            //same with different case
+            updatingDto.setName("preparing tender documents");
+
+            when(procurementStatusRepository.findById(statusId))
+                    .thenReturn(Optional.of(status));
+            //no need to check the name
+            when(procurementStatusRepository.save(any(ProcurementStatus.class)))
+                    .thenReturn(status);
+
+            //ACT:
+            ProcurementStatusDto result = adminService.updateProcurementStatus(statusId,updatingDto);
+
+            //ASSERT:
+            assertNotNull(result);
+            assertEquals(statusId, result.getId());
+            assertEquals(updatingDto.getName(), result.getName());
+
+            //VERIFY:
+            verify(procurementStatusRepository).findById(statusId);
+            verify(procurementStatusRepository).save(any(ProcurementStatus.class));
+            //not executed
+            verify(procurementStatusRepository, never()).findFirstByName(updatingDto.getName());
         }
 
         @Test

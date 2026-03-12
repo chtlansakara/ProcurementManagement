@@ -65,6 +65,21 @@ public class AdminDivServiceImpl implements AdminDivService {
     }
 
 
+    @Override
+    public List<SubdivDto> getSubdivList() {
+        //get admindiv of the logger user
+        Long admindivId = getAdmindivIdofLoggedUser();
+
+        //get & return subdiv list of the admindiv
+        return subdivRepository.findByAdmindivId(admindivId)
+                .stream()
+                .sorted(Comparator.comparing(Subdiv::getName))
+                .map(Subdiv::getSubdivDto)
+                .collect(Collectors.toList());
+
+    }
+
+
     //get only requests belong to admin div
    @Transactional(readOnly = true)
     @Override
@@ -82,60 +97,20 @@ public class AdminDivServiceImpl implements AdminDivService {
                 .collect(Collectors.toList());
     }
 
-
-
-    //get Procurements related to Admindiv requests
+    //get RELATED requests by admin div id
     @Transactional(readOnly = true)
     @Override
-    public List<ProcurementResponseDto> getAllProcurementOnlyByAdmindivId() {
+    public List<RequestDto> getAllRequestsRelatedByAdmindivId() {
+        //finding the admin div's subdiv list
         List<Long> subdivIdList = subdivRepository.findByAdmindivId(getAdmindivIdofLoggedUser())
                 .stream()
                 .map(Subdiv::getId)
                 .collect(Collectors.toList());
-        //2. find requests with that sub-div ids
-        List<Long> admindivRequestIds = requestRepository.findAllRequestsOnlyBySubdivIdList(subdivIdList)
+        return requestRepository.findAllRequestsRelatedBySubdivIdList(subdivIdList)
                 .stream()
-                .map(Request::getId)
+                .map(Request::getRequestDto)
                 .collect(Collectors.toList());
-
-        //get Procurement from request repository query
-        List<Procurement> admindivProcurement=procurementRepository.findByRequestIdIn(admindivRequestIds);
-
-        return procurementMapper.toResponseDtoList(admindivProcurement);
     }
-
-    //get procurement by id - admindiv
-    @Transactional
-    @Override
-    public ProcurementResponseDto getProcurementByIdForAdmindiv(Long id) {
-        //first need to check if the procurement is related to admindiv
-        List<Long> subdivIdList = subdivRepository.findByAdmindivId(getAdmindivIdofLoggedUser())
-                .stream()
-                .map(Subdiv::getId)
-                .collect(Collectors.toList());
-        //2. find requests with that sub-div ids
-        List<Long> admindivRequestIds = requestRepository.findAllRequestsOnlyBySubdivIdList(subdivIdList)
-                .stream()
-                .map(Request::getId)
-                .collect(Collectors.toList());
-
-        //get Procurement from request repository query -> as id list
-        List<Long> admindivProcurementIds = procurementRepository.findByRequestIdIn(admindivRequestIds)
-                .stream()
-                .map(Procurement::getId)
-                .toList();
-
-        //3. check if the checking id contains in the list for subdiv
-        if(!admindivProcurementIds.contains(id)){
-            throw new RuntimeException("This procurement can not be accessed by this admin-division");
-        }
-        //then return the procurement
-        Procurement procurement = procurementRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("Procurement not found"));
-        return procurementMapper.toResponseDto(procurement);
-    }
-
-
 
 
     //get only - pending requests
@@ -190,20 +165,7 @@ public class AdminDivServiceImpl implements AdminDivService {
                 .collect(Collectors.toList());
     }
 
-    //get RELATED requests by admin div id
-    @Transactional(readOnly = true)
-    @Override
-    public List<RequestDto> getAllRequestsRelatedByAdmindivId() {
-        //finding the admin div's subdiv list
-        List<Long> subdivIdList = subdivRepository.findByAdmindivId(getAdmindivIdofLoggedUser())
-                .stream()
-                .map(Subdiv::getId)
-                .collect(Collectors.toList());
-        return requestRepository.findAllRequestsRelatedBySubdivIdList(subdivIdList)
-                .stream()
-                .map(Request::getRequestDto)
-                .collect(Collectors.toList());
-    }
+
 
     //get request by id
     @Override
@@ -278,20 +240,8 @@ public class AdminDivServiceImpl implements AdminDivService {
 
     }
 
+//related to comment or approve requests
 
-    //get reject comments for a request  by id
-    @Override
-    public List<CommentDto> getCommentsByRequestId(Long requestId) {
-        Request request = validateAsAdmindivRequest(requestId);
-        return commentService.getCommentsByRequestId(requestId);
-    }
-
-    //get approvals by request id
-    @Override
-    public List<ApprovalDto> getApprovalsByRequestId(Long requestId) {
-      Request request = validateAsAdmindivRequest(requestId);
-      return approvalService.getApprovalsByRequestId(requestId);
-    }
 
     //reject request - create a comment & change request status
     @Override
@@ -343,48 +293,104 @@ public class AdminDivServiceImpl implements AdminDivService {
         if(existingRequest.getStatus().equals(RequestStatus.PENDING_ADMIN_APPROVAL)) {
 
 
-                //3. To create approval:
-                //i. check if a reject or approval for the request id already present from admin div - get from db
-                List<CommentDto> commentsForRequest = commentRepository.findAllByRequestIdAndType(requestId, ReviewType.ADMIN_DIV)
-                        .stream().map(Comment::getCommentDto).collect(Collectors.toList());
-                List<ApprovalDto> approvalsForRequst = approvalRepository.findAllByRequestIdAndType(requestId, ApprovalType.ADMIN_DIV)
-                        .stream().map(Approval::getApprovalDto).collect(Collectors.toList());
-                //ii. check if there is any
-                if(!commentsForRequest.isEmpty() && !approvalsForRequst.isEmpty() ){
-                    throw new RuntimeException("Already reviewed request!");
-                }
-
-                //4. change request status to approved
-                existingRequest.setStatus(RequestStatus.PENDING_SUPPLIES_APPROVAL);
-
-                //5. save request to db
-                requestRepository.save(existingRequest);
-
-                //6. update ApprovalDto with request id and type
-                approvalDto.setType(ApprovalType.ADMIN_DIV);
-                approvalDto.setRequestId(requestId);
-
-                //7.create new approval object through Approval service
-                return approvalService.createApproval(approvalDto);
-            }else{
-                throw new RuntimeException("Request is not due for review");
+            //3. To create approval:
+            //i. check if a reject or approval for the request id already present from admin div - get from db
+            List<CommentDto> commentsForRequest = commentRepository.findAllByRequestIdAndType(requestId, ReviewType.ADMIN_DIV)
+                    .stream().map(Comment::getCommentDto).collect(Collectors.toList());
+            List<ApprovalDto> approvalsForRequst = approvalRepository.findAllByRequestIdAndType(requestId, ApprovalType.ADMIN_DIV)
+                    .stream().map(Approval::getApprovalDto).collect(Collectors.toList());
+            //ii. check if there is any
+            if(!commentsForRequest.isEmpty() && !approvalsForRequst.isEmpty() ){
+                throw new RuntimeException("Already reviewed request!");
             }
 
+            //4. change request status to approved
+            existingRequest.setStatus(RequestStatus.PENDING_SUPPLIES_APPROVAL);
+
+            //5. save request to db
+            requestRepository.save(existingRequest);
+
+            //6. update ApprovalDto with request id and type
+            approvalDto.setType(ApprovalType.ADMIN_DIV);
+            approvalDto.setRequestId(requestId);
+
+            //7.create new approval object through Approval service
+            return approvalService.createApproval(approvalDto);
+        }else{
+            throw new RuntimeException("Request is not due for review");
+        }
+
     }
 
+    //get reject comments for a request  by id
     @Override
-    public List<SubdivDto> getSubdivList() {
-        //get admindiv of the logger user
-        Long admindivId = getAdmindivIdofLoggedUser();
+    public List<CommentDto> getCommentsByRequestId(Long requestId) {
+        Request request = validateAsAdmindivRequest(requestId);
+        return commentService.getCommentsByRequestId(requestId);
+    }
 
-        //get & return subdiv list of the admindiv
-        return subdivRepository.findByAdmindivId(admindivId)
+    //get approvals by request id
+    @Override
+    public List<ApprovalDto> getApprovalsByRequestId(Long requestId) {
+      Request request = validateAsAdmindivRequest(requestId);
+      return approvalService.getApprovalsByRequestId(requestId);
+    }
+
+//procurement related
+
+    //get Procurements related to Admindiv requests
+    @Transactional(readOnly = true)
+    @Override
+    public List<ProcurementResponseDto> getAllProcurementOnlyByAdmindivId() {
+        List<Long> subdivIdList = subdivRepository.findByAdmindivId(getAdmindivIdofLoggedUser())
                 .stream()
-                .sorted(Comparator.comparing(Subdiv::getName))
-                .map(Subdiv::getSubdivDto)
+                .map(Subdiv::getId)
+                .collect(Collectors.toList());
+        //2. find requests with that sub-div ids
+        List<Long> admindivRequestIds = requestRepository.findAllRequestsOnlyBySubdivIdList(subdivIdList)
+                .stream()
+                .map(Request::getId)
                 .collect(Collectors.toList());
 
+        //get Procurement from request repository query
+        List<Procurement> admindivProcurement=procurementRepository.findByRequestIdIn(admindivRequestIds);
+
+        return procurementMapper.toResponseDtoList(admindivProcurement);
     }
+
+    //get procurement by id - admindiv
+    @Transactional
+    @Override
+    public ProcurementResponseDto getProcurementByIdForAdmindiv(Long id) {
+        //first need to check if the procurement is related to admindiv
+        List<Long> subdivIdList = subdivRepository.findByAdmindivId(getAdmindivIdofLoggedUser())
+                .stream()
+                .map(Subdiv::getId)
+                .collect(Collectors.toList());
+        //2. find requests with that sub-div ids
+        List<Long> admindivRequestIds = requestRepository.findAllRequestsOnlyBySubdivIdList(subdivIdList)
+                .stream()
+                .map(Request::getId)
+                .collect(Collectors.toList());
+
+        //get Procurement from request repository query -> as id list
+        List<Long> admindivProcurementIds = procurementRepository.findByRequestIdIn(admindivRequestIds)
+                .stream()
+                .map(Procurement::getId)
+                .toList();
+
+        //3. check if the checking id contains in the list for subdiv
+        if(!admindivProcurementIds.contains(id)){
+            throw new RuntimeException("This procurement can not be accessed by this admin-division");
+        }
+        //then return the procurement
+        Procurement procurement = procurementRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("Procurement not found"));
+        return procurementMapper.toResponseDto(procurement);
+    }
+
+
+//class methods
 
     //method to get admindiv of the logged user
     private Long getAdmindivIdofLoggedUser(){

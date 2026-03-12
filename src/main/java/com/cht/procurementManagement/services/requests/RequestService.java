@@ -8,7 +8,7 @@ import java.util.List;
 public interface RequestService {
     RequestDto createRequest(RequestDto requestDto);
 
-    RequestDto updateRequest(Long id, RequestDto requestDto);
+//    RequestDto updateRequest(Long id, RequestDto requestDto);
 
     RequestDto updateRequest(Request request, RequestDto requestDto);
 
@@ -16,7 +16,7 @@ public interface RequestService {
 
     List<RequestDto> getAllRequests();
 
-    void deleteRequest(Long requestId);
+//    void deleteRequest(Long requestId);
 
     void deleteRequest (Request request);
 }

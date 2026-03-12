@@ -79,6 +79,7 @@ public class SuppliesServiceImpl implements SuppliesService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<RequestDto> getRequestsApproved() {
         return requestRepository.findAll()
@@ -88,7 +89,7 @@ public class SuppliesServiceImpl implements SuppliesService {
                 .map(Request::getRequestDto)
                 .collect(Collectors.toList());
     }
-
+    @Transactional(readOnly = true)
     @Override
     public RequestDto getRequestById(Long requestId) {
         //using request service method
@@ -96,32 +97,7 @@ public class SuppliesServiceImpl implements SuppliesService {
     }
 
 
-    @Override
-    public List<SubdivDto> getSubdivsByAdmindivId(Long id) {
-        return subdivRepository.findByAdmindivId(id)
-                .stream()
-                .sorted(Comparator.comparing(Subdiv::getCode))
-                .map(Subdiv::getSubdivDto)
-                .collect(Collectors.toList());
-    }
 
-    @Override
-    public List<AdmindivDto> getAllAdmindivs() {
-        return admindivRepository.findAll()
-                .stream()
-                .sorted(Comparator.comparing(Admindiv::getCode))
-                .map(Admindiv::getAdmindivDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<SubdivDto> getSubdivs() {
-        return subdivRepository.findAll()
-                .stream()
-                .sorted(Comparator.comparing(Subdiv::getCode))
-                .map(Subdiv::getSubdivDto)
-                .collect(Collectors.toList());
-    }
 
     //create request
     @Override
@@ -152,6 +128,47 @@ public class SuppliesServiceImpl implements SuppliesService {
         }
     }
 
+    @Override
+    public RequestDto updateRequest(Long requestId, RequestDto requestDto) {
+        //check for validation for supplies user - using class method
+        Request existingRequest = validateRequestForUpdateDeleteForSuppliesUser(requestId);
+
+        //2. check for sub div list in new request dto
+        if(requestDto.getSubdivIdList() != null && !requestDto.getSubdivIdList().isEmpty()) {
+
+
+            //check if sub divs exist in db
+            if(!checkIfSubdivIdsExist(requestDto.getSubdivIdList())) {
+                throw new RuntimeException("Some sub divisions entered may not exist!");
+            }
+
+            //check if all selected sub divs selected to one admin division
+            if(!checkIfSubdivIdsForOneAdmindiv(requestDto.getSubdivIdList())){
+                throw new RuntimeException("Sub-divisions must belong to one admin-division");
+            }
+
+            //3. set status of request
+            requestDto.setStatus(RequestStatus.PENDING_PROCUREMENT);
+
+            //4. create request through request service
+            return requestService.updateRequest(existingRequest, requestDto);
+
+        }else{
+            throw new EntityNotFoundException("Sub-division/s in updated request not found!");
+        }
+
+    }
+
+    @Override
+    public void deleteRequest(Long requestId) {
+        //check for validation for supplies user - using class method
+        Request existingRequest = validateRequestForUpdateDeleteForSuppliesUser(requestId);
+
+        //delete request
+        requestService.deleteRequest(existingRequest);
+    }
+
+//related to approve and reject requests
 
     //reject a request from a sub div - create comment & change request status
     @Override
@@ -225,51 +242,22 @@ public class SuppliesServiceImpl implements SuppliesService {
         return approvalService.getApprovalsByRequestId(requestId);
     }
 
-    @Override
-    public RequestDto updateRequest(Long requestId, RequestDto requestDto) {
-        //check for validation for supplies user - using class method
-        Request existingRequest = validateRequestForUpdateDeleteForSuppliesUser(requestId);
 
-        //2. check for sub div list in new request dto
-        if(requestDto.getSubdivIdList() != null && !requestDto.getSubdivIdList().isEmpty()) {
-
-
-            //check if sub divs exist in db
-            if(!checkIfSubdivIdsExist(requestDto.getSubdivIdList())) {
-                throw new RuntimeException("Some sub divisions entered may not exist!");
-            }
-
-            //check if all selected sub divs selected to one admin division
-            if(!checkIfSubdivIdsForOneAdmindiv(requestDto.getSubdivIdList())){
-                throw new RuntimeException("Sub-divisions must belong to one admin-division");
-            }
-
-            //3. set status of request
-            requestDto.setStatus(RequestStatus.PENDING_PROCUREMENT);
-
-            //4. create request through request service
-            return requestService.updateRequest(existingRequest, requestDto);
-
-        }else{
-            throw new EntityNotFoundException("Sub-division/s in updated request not found!");
-        }
-
-    }
-
-    @Override
-    public void deleteRequest(Long requestId) {
-        //check for validation for supplies user - using class method
-        Request existingRequest = validateRequestForUpdateDeleteForSuppliesUser(requestId);
-
-        //delete request
-        requestService.deleteRequest(existingRequest);
-    }
-
+//other methods
     @Override
     public List<SubdivDto> getAllSubdivs() {
         return subdivRepository.findAll()
                 .stream()
                 .sorted(Comparator.comparing(Subdiv::getName))
+                .map(Subdiv::getSubdivDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SubdivDto> getSubdivsByAdmindivId(Long id) {
+        return subdivRepository.findByAdmindivId(id)
+                .stream()
+                .sorted(Comparator.comparing(Subdiv::getCode))
                 .map(Subdiv::getSubdivDto)
                 .collect(Collectors.toList());
     }
@@ -303,7 +291,25 @@ public class SuppliesServiceImpl implements SuppliesService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<AdmindivDto> getAllAdmindivs() {
+        return admindivRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Admindiv::getCode))
+                .map(Admindiv::getAdmindivDto)
+                .collect(Collectors.toList());
+    }
 
+    @Override
+    public List<SubdivDto> getSubdivs() {
+        return subdivRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(Subdiv::getCode))
+                .map(Subdiv::getSubdivDto)
+                .collect(Collectors.toList());
+    }
+
+//class methods
     private Request validateRequestForUpdateDeleteForSuppliesUser(Long requestId){
 
             //1. find the request object to reject

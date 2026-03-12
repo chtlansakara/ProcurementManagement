@@ -15,10 +15,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,19 +50,28 @@ public class RequestServiceImpl implements  RequestService{
         //1. set 'createdBy' user -
         //finding the logged user id
         Long loggedUserId = authService.getLoggedUserDto().getId();
+
         //finding User object from db
         User userCreatedBy  = userRepository.findById(loggedUserId)
-                .orElseThrow( () -> new RuntimeException("User not found!"));
+                .orElseThrow( () -> new EntityNotFoundException("User not found!"));
 
-        //2. find subdiv objects from db
+        //2. find sub-div objects from db
         //finding the sub div objects list from db
         List<Subdiv> subdivList = subdivRepository.findAllById(requestDto.getSubdivIdList());
 
-        //get the admindiv of request
-        Admindiv requestAdmindiv = subdivList.stream().map(Subdiv::getAdmindiv).findFirst()
-                .orElseThrow(() ->  new RuntimeException("Admin division of request can not be found"));
+        //throw error if sub-div list is empty
+        if(subdivList.isEmpty()){
+            throw new RuntimeException("Sub divisions for request are empty");
+        }
 
-        //3. create a new request
+        //3. get the admin-div of request & set automatically
+        Admindiv requestAdmindiv = subdivList.stream()
+                .map(Subdiv::getAdmindiv)
+                .filter(Objects::nonNull) //filter out the null
+                .findFirst()
+                .orElseThrow(() ->  new EntityNotFoundException("Admin division of request can not be found"));
+
+        //4. create new request
         Request request = new Request();
 
         request.setTitle(requestDto.getTitle());
@@ -86,7 +92,7 @@ public class RequestServiceImpl implements  RequestService{
         //add current date as created date
         request.setCreatedDate(new Date());
 
-        //setting objects - User & Subdiv Objects list
+        //setting objects - User & Sub-div Objects list
         request.setCreatedBy(userCreatedBy);
         request.setSubdivList(subdivList);
         request.setAdmindiv(requestAdmindiv);
@@ -97,72 +103,73 @@ public class RequestServiceImpl implements  RequestService{
         //send notifications service the saved request object
         notificationService.onRequestSubmitted(savedRequest);
 
+        //return as dto
         return savedRequest.getRequestDto();
     }
 
-    @Transactional
-    @Override
-    public RequestDto updateRequest(Long id, RequestDto requestDto) {
-      //check for correct sub div list & status in dto before here
-
-       //check for request
-        Optional<Request> optionalRequest = requestRepository.findById(id);
-
-        //finding the logged user id
-        Long loggedUserId = authService.getLoggedUserDto().getId();
-
-        //finding User object from db
-        User userUpdatedBy  = userRepository.findById(loggedUserId)
-                .orElseThrow( () -> new RuntimeException("User not found!"));
-
-        //check if sub div is empty
-        if(requestDto.getSubdivIdList() == null || requestDto.getSubdivIdList().contains(null)){
-            throw new RuntimeException("Sub divisions list must not be empty or contain null values");
-        }
-
-        //finding the sub div objects list from db
-            List<Subdiv> subdivList = subdivRepository.findAllById(requestDto.getSubdivIdList());
-
-        //get the admindiv of request
-        Admindiv requestAdmindiv = subdivList.stream().map(Subdiv::getAdmindiv).findFirst()
-                .orElseThrow(() ->  new RuntimeException("Admin division of request can not be found"));
-
-        if(optionalRequest.isPresent()){
-            //get Request object to update
-            Request existingRequest = optionalRequest.get();
-
-            //update with data
-            existingRequest.setTitle(requestDto.getTitle());
-            existingRequest.setQuantity(requestDto.getQuantity());
-            existingRequest.setDescription(requestDto.getDescription());
-            existingRequest.setFund(requestDto.getFund());
-            existingRequest.setEstimation(requestDto.getEstimation());
-
-
-            existingRequest.setStatus(requestDto.getStatus());
-
-            existingRequest.setPreviouslyPurchased(requestDto.isPreviouslyPurchased());
-            existingRequest.setPreviousPurchaseYear(requestDto.getPreviousPurchaseYear());
-            existingRequest.setReasonForRequirement(requestDto.getReasonForRequirement());
-            existingRequest.setApprovedDate(requestDto.getApprovedDate());
-            existingRequest.setAuthorizedBy(requestDto.getAuthorizedBy());
-
-            //add current date as created date
-            existingRequest.setCreatedDate(new Date());
-
-            //setting objects User & Sub-div Object list
-            existingRequest.setCreatedBy(userUpdatedBy);
-            //set only if the new list is not empty - if empty doesn't change
-
-            existingRequest.setSubdivList(subdivList);
-            existingRequest.setAdmindiv(requestAdmindiv);
-
-
-            //save and return as dto
-            return requestRepository.save(existingRequest).getRequestDto();
-        }
-        return null;
-    }
+//    @Transactional
+//    @Override
+//    public RequestDto updateRequest(Long id, RequestDto requestDto) {
+//      //check for correct sub div list & status in dto before here
+//
+//       //check for request
+//        Optional<Request> optionalRequest = requestRepository.findById(id);
+//
+//        //finding the logged user id
+//        Long loggedUserId = authService.getLoggedUserDto().getId();
+//
+//        //finding User object from db
+//        User userUpdatedBy  = userRepository.findById(loggedUserId)
+//                .orElseThrow( () -> new RuntimeException("User not found!"));
+//
+//        //check if sub div is empty
+//        if(requestDto.getSubdivIdList() == null || requestDto.getSubdivIdList().contains(null)){
+//            throw new RuntimeException("Sub divisions list must not be empty or contain null values");
+//        }
+//
+//        //finding the sub div objects list from db
+//            List<Subdiv> subdivList = subdivRepository.findAllById(requestDto.getSubdivIdList());
+//
+//        //get the admindiv of request
+//        Admindiv requestAdmindiv = subdivList.stream().map(Subdiv::getAdmindiv).findFirst()
+//                .orElseThrow(() ->  new RuntimeException("Admin division of request can not be found"));
+//
+//        if(optionalRequest.isPresent()){
+//            //get Request object to update
+//            Request existingRequest = optionalRequest.get();
+//
+//            //update with data
+//            existingRequest.setTitle(requestDto.getTitle());
+//            existingRequest.setQuantity(requestDto.getQuantity());
+//            existingRequest.setDescription(requestDto.getDescription());
+//            existingRequest.setFund(requestDto.getFund());
+//            existingRequest.setEstimation(requestDto.getEstimation());
+//
+//
+//            existingRequest.setStatus(requestDto.getStatus());
+//
+//            existingRequest.setPreviouslyPurchased(requestDto.isPreviouslyPurchased());
+//            existingRequest.setPreviousPurchaseYear(requestDto.getPreviousPurchaseYear());
+//            existingRequest.setReasonForRequirement(requestDto.getReasonForRequirement());
+//            existingRequest.setApprovedDate(requestDto.getApprovedDate());
+//            existingRequest.setAuthorizedBy(requestDto.getAuthorizedBy());
+//
+//            //add current date as created date
+//            existingRequest.setCreatedDate(new Date());
+//
+//            //setting objects User & Sub-div Object list
+//            existingRequest.setCreatedBy(userUpdatedBy);
+//            //set only if the new list is not empty - if empty doesn't change
+//
+//            existingRequest.setSubdivList(subdivList);
+//            existingRequest.setAdmindiv(requestAdmindiv);
+//
+//
+//            //save and return as dto
+//            return requestRepository.save(existingRequest).getRequestDto();
+//        }
+//        return null;
+//    }
 
     //USED ONE
     @Override
@@ -171,15 +178,16 @@ public class RequestServiceImpl implements  RequestService{
 
         //4. get logged User object
         Long loggedUserId = authService.getLoggedUserDto().getId();
+
         User updatedBy = userRepository.findById(loggedUserId)
-                .orElseThrow(()-> new RuntimeException("User not found"));
+                .orElseThrow(()-> new EntityNotFoundException("User not found"));
 
         //5. find sub-divs
         List<Subdiv> subdivList = subdivRepository.findAllById(requestDto.getSubdivIdList());
 
         //check for sub-div list
         if(subdivList.size() != requestDto.getSubdivIdList().size()){
-            throw new RuntimeException("Invalid sub-div ids");
+            throw new RuntimeException("Invalid sub-divisions!");
         }
 
 
@@ -214,7 +222,7 @@ public class RequestServiceImpl implements  RequestService{
     public RequestDto getRequestById(Long requestId) {
         return requestRepository.findById(requestId)
                 .map(Request::getRequestDto)
-                .orElseThrow(() -> new EntityNotFoundException("Request is not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Request not found"));
     }
 
     //get all requests - sorted - FYI
@@ -227,20 +235,20 @@ public class RequestServiceImpl implements  RequestService{
                 .map(Request::getRequestDto)
                 .collect(Collectors.toList());
     }
-    @Transactional
-    @Override
-    public void deleteRequest(Long requestId) {
-        Optional<Request> optionalRequest = requestRepository.findById(requestId);
-
-        if(!optionalRequest.isPresent()){
-            throw new RuntimeException("Request is not found");
-        }
-
-        //delete related notifications
-        notificationService.deleteNotifications(AuditEntityType.REQUEST, requestId);
-        requestRepository.deleteById(requestId);
-
-    }
+//    @Transactional
+//    @Override
+//    public void deleteRequest(Long requestId) {
+//        Optional<Request> optionalRequest = requestRepository.findById(requestId);
+//
+//        if(!optionalRequest.isPresent()){
+//            throw new RuntimeException("Request is not found");
+//        }
+//
+//        //delete related notifications
+//        notificationService.deleteNotifications(AuditEntityType.REQUEST, requestId);
+//        requestRepository.deleteById(requestId);
+//
+//    }
 
     //USED ONE
     @Transactional
@@ -248,7 +256,7 @@ public class RequestServiceImpl implements  RequestService{
     public void deleteRequest(Request request) {
         //delete related notifications
         notificationService.deleteNotifications(AuditEntityType.REQUEST, request.getId());
-        requestRepository.deleteById(request.getId());
+//        requestRepository.deleteById(request.getId());
         requestRepository.delete(request);
     }
 

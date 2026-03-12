@@ -13,7 +13,8 @@ import java.util.List;
 
 public interface SubDivService {
 
-    RequestDto createRequestBySubdiv(RequestDto requestDto);
+    //get subdiv by id
+    SubdivDto getSubdiv();
 
     //All related requests
     List<RequestDto> getAllRequestsRelatedBySubdivId();
@@ -21,24 +22,23 @@ public interface SubDivService {
     //Only belong to sub-div
     List<RequestDto> getAllRequestsOnlyBySubdivId();
 
+    RequestDto createRequestBySubdiv(RequestDto requestDto);
+
     //request by id
     RequestDto getRequestById(Long id);
 
-    //get subdiv by id
-    SubdivDto getSubdiv();
+    void deleteRequestById(Long id);
 
+    RequestDto updateRequestById(Long id, RequestDto requestDto);
 
+//comment & approval related
     //get comments by request id
     List<CommentDto> getCommentsByRequestId(Long id);
 
     //get approvals by request id
     List<ApprovalDto> getApprovalsByRequestId(Long id);
 
-
-    void deleteRequestById(Long id);
-
-    RequestDto updateRequestById(Long id, RequestDto requestDto);
-
+//procurement related
     List<ProcurementResponseDto> getAllProcurementOnlyBySubdivId();
 
     ProcurementResponseDto getProcurementByIdForSubdiv(Long id);

@@ -18,19 +18,20 @@ public interface ProcurementService {
     //getting vendors list - to create a procurement or update
     List<VendorDto> getVendorsList();
 
-
     //getting procurement status objects - to update status of a procurement
     List<ProcurementStatusDto> getProcurementStatusList();
 
     //getting procurement stages list - to update status of a procurement
     List<String> getProcurmentStagesList();
+
     //getting procurement sources list - to update and create procurement
     List<ProcurementSourceDto> getProcurementSources();
 
+//procurement CRUD:
     //create a procurement
     ProcurementResponseDto createProcurement(ProcurementCreateDto createDto);
 
-    //get all procurement
+    //get procurement list
     List<ProcurementResponseDto> getProcurement();
 
     //get procurement by id
@@ -38,6 +39,9 @@ public interface ProcurementService {
 
     //update procurement
     ProcurementResponseDto updateProcurement(Long id, ProcurementCreateDto createDto);
+
+    //get requests that can be chosen when updating a procurement
+    List<RequestDto> getRequestsForUpdateProcurement();
 
     //update status of a procurement, creating a new status-update object
     ProcurementStatusUpdateDto updateStatus(Long procurementId, ProcurementStatusUpdateDto updateStatusDto);
@@ -48,8 +52,7 @@ public interface ProcurementService {
     //delete procurement by id
     void deleteProcurement(Long id);
 
-    //get requests that can be chosen when updating a procurement
-    List<RequestDto> getRequestsForUpdateProcurement();
+
 
 
 

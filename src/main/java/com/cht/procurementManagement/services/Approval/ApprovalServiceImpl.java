@@ -45,7 +45,7 @@ public class ApprovalServiceImpl implements  ApprovalService{
         Long loggedUserId = authService.getLoggedUserDto().getId();
         //finding the User object from db
         User userCreatedBy = userRepository.findById(loggedUserId)
-                .orElseThrow(()-> new RuntimeException("User not found!"));
+                .orElseThrow(()-> new EntityNotFoundException("User not found!"));
 
         //finding the relevant request in db from request id
         Optional<Request> optionalRequest = requestRepository.findById(approvalDto.getRequestId());
@@ -76,7 +76,7 @@ public class ApprovalServiceImpl implements  ApprovalService{
             return savedApproval.getApprovalDto();
 
         }else{
-            throw new EntityNotFoundException("Request is not found");
+            throw new EntityNotFoundException("Request not found!");
         }
 
     }

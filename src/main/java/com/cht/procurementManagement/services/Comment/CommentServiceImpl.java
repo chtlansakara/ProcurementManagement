@@ -48,7 +48,7 @@ public class CommentServiceImpl implements  CommentService{
 
         //finding the User Object from db
         User userCreatedBy = userRepository.findById(loggedUserId)
-                .orElseThrow(() -> new RuntimeException("User not found!"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found!"));
 
         //finding the relevant request from db from request-id
         Optional<Request> optionalRequest = requestRepository.findById(commentDto.getRequestId());

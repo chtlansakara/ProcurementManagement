@@ -62,6 +62,37 @@ public class SubDivServiceImpl implements SubDivService {
         this.notificationService = notificationService;
     }
 
+    //get sub-div dto of the logged user
+    @Override
+    public SubdivDto getSubdiv() {
+        return subdivRepository.findById(getSubdivIdofLoggedUser())
+                .map(Subdiv::getSubdivDto)
+                .orElseThrow( () -> new EntityNotFoundException("Subdiv is not found"));
+    }
+
+    //get all requests RELATED to sub-div
+    @Transactional(readOnly = true)
+    @Override
+    public List<RequestDto> getAllRequestsRelatedBySubdivId() {
+        //getting sub div id of the user logged in
+        return  requestRepository.findAllRequestsRelatedBySubdivId(getSubdivIdofLoggedUser())
+                .stream()
+                .map(Request::getRequestDto)
+                .collect(Collectors.toList());
+    }
+
+    //get all requests ONLY for sub-div
+    @Transactional(readOnly = true)
+    @Override
+    public List<RequestDto> getAllRequestsOnlyBySubdivId() {
+        //getting sub div id of the user logged in
+        return  requestRepository.findAllRequestsOnlyBySubdivId(getSubdivIdofLoggedUser())
+                .stream()
+                .sorted(Comparator.comparing(Request::getId).reversed())
+                .map(Request::getRequestDto)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     @Override
     public RequestDto createRequestBySubdiv(RequestDto requestDto) {
@@ -80,21 +111,56 @@ public class SubDivServiceImpl implements SubDivService {
         return requestService.createRequest(requestDto);
     }
 
-
-
-    //get all requests ONLY for sub-div
-    @Transactional(readOnly = true)
+    //get request by id
     @Override
-    public List<RequestDto> getAllRequestsOnlyBySubdivId() {
-        //getting sub div id of the user logged in
-        return  requestRepository.findAllRequestsOnlyBySubdivId(getSubdivIdofLoggedUser())
-                .stream()
-                .sorted(Comparator.comparing(Request::getId).reversed())
-                .map(Request::getRequestDto)
-                .collect(Collectors.toList());
+    public RequestDto getRequestById(Long id) {
+        //validate as sub-div request & return as dto
+        return validateAsSubdivRequest(id).getRequestDto();
     }
 
-    //get Procurements related to Subdiv requests
+    @Override
+    public void deleteRequestById(Long id) {
+        //1. Check authorization for the request for sub-div user - using class method
+        Request existingRequest = validateRequestUpdateDeleteForSubdivUser(id);
+        //2. Delete using request servie
+        requestService.deleteRequest(existingRequest);
+    }
+
+    @Transactional
+    @Override
+    public RequestDto updateRequestById(Long id, RequestDto requestDto) {
+
+        //1. Check authorization for the request for sub-div user - using class method
+        Request existingRequest = validateRequestUpdateDeleteForSubdivUser(id);
+
+        //2. set sub div list of the request dto -- as user's
+        //getting user's sub-div details from logged details - using class method
+        Long subdivIdOfUser = getSubdivIdofLoggedUser();
+        requestDto.setSubdivIdList(List.of(subdivIdOfUser));
+
+        //3. set status of dto:
+        requestDto.setStatus(RequestStatus.PENDING_ADMIN_APPROVAL);
+
+        return requestService.updateRequest(existingRequest, requestDto);
+    }
+
+    @Override
+    public List<CommentDto> getCommentsByRequestId(Long id) {
+
+        Request request = validateAsSubdivRequest(id);
+        return commentService.getCommentsByRequestId(id);
+
+    }
+
+    @Override
+    public List<ApprovalDto> getApprovalsByRequestId(Long id){
+
+        Request request = validateAsSubdivRequest(id);
+        return approvalService.getApprovalsByRequestId(id);
+    }
+
+
+    //get Procurements related to Sub-div requests
     @Transactional(readOnly = true)
     @Override
     public List<ProcurementResponseDto> getAllProcurementOnlyBySubdivId() {
@@ -135,75 +201,7 @@ public class SubDivServiceImpl implements SubDivService {
         return procurementMapper.toResponseDto(procurement);
     }
 
-
-    //get request by id
-    @Override
-    public RequestDto getRequestById(Long id) {
-        //validate as sub-div request & return as dto
-       return validateAsSubdivRequest(id).getRequestDto();
-    }
-
-    //get sub-div dto of the logged user
-    @Override
-    public SubdivDto getSubdiv() {
-        return subdivRepository.findById(getSubdivIdofLoggedUser())
-                .map(Subdiv::getSubdivDto)
-                .orElseThrow( () -> new EntityNotFoundException("Subdiv is not found"));
-    }
-
-    @Override
-    public List<CommentDto> getCommentsByRequestId(Long id) {
-
-        Request request = validateAsSubdivRequest(id);
-        return commentService.getCommentsByRequestId(id);
-
-    }
-
-    @Override
-    public List<ApprovalDto> getApprovalsByRequestId(Long id){
-
-        Request request = validateAsSubdivRequest(id);
-        return approvalService.getApprovalsByRequestId(id);
-    }
-
-    @Override
-    public void deleteRequestById(Long id) {
-        //1. Check authorization for the request for sub-div user - using class method
-        Request existingRequest = validateRequestUpdateDeleteForSubdivUser(id);
-        //2. Delete using request servie
-        requestService.deleteRequest(existingRequest);
-    }
-
-    @Transactional
-    @Override
-    public RequestDto updateRequestById(Long id, RequestDto requestDto) {
-
-        //1. Check authorization for the request for sub-div user - using class method
-        Request existingRequest = validateRequestUpdateDeleteForSubdivUser(id);
-
-        //2. set sub div list of the request dto -- as user's
-        //getting user's sub-div details from logged details - using class method
-        Long subdivIdOfUser = getSubdivIdofLoggedUser();
-        requestDto.setSubdivIdList(List.of(subdivIdOfUser));
-
-        //3. set status of dto:
-        requestDto.setStatus(RequestStatus.PENDING_ADMIN_APPROVAL);
-
-        return requestService.updateRequest(existingRequest, requestDto);
-    }
-
-
-    //get all requests RELATED to sub-div
-    @Transactional(readOnly = true)
-    @Override
-    public List<RequestDto> getAllRequestsRelatedBySubdivId() {
-        //getting sub div id of the user logged in
-        return  requestRepository.findAllRequestsRelatedBySubdivId(getSubdivIdofLoggedUser())
-                .stream()
-                .map(Request::getRequestDto)
-                .collect(Collectors.toList());
-    }
-
+//class-methods
 
     //class method to get sub div id from the logged user details
     private Long getSubdivIdofLoggedUser(){

@@ -16,9 +16,11 @@ public interface SuppliesService {
 
     RequestDto getRequestById(Long requestId);
 
-    List<SubdivDto> getSubdivsByAdmindivId(Long id);
-
     RequestDto createRequestBySupplies(RequestDto requestDto);
+
+    RequestDto updateRequest(Long requestId, RequestDto requestDto);
+
+    void deleteRequest(Long requestId);
 
     //reject a request from an admin div - create comment & change request status
     CommentDto rejectRequestBySupplies(Long requestId, CommentDto commentDto);
@@ -30,13 +32,12 @@ public interface SuppliesService {
 
     List<ApprovalDto> getApprovalsByRequestId(Long requestId);
 
-    RequestDto updateRequest(Long requestId, RequestDto requestDto);
-
-    void deleteRequest(Long requestId);
 
 
     //get sub div list to create a request
     List<SubdivDto> getAllSubdivs();
+
+    List<SubdivDto> getSubdivsByAdmindivId(Long id);
 
     //get sub div list grouped by its admindiv
     List<SubdivGroupedDto> getGroupedSubdivs();
@@ -44,7 +45,5 @@ public interface SuppliesService {
     List<AdmindivDto> getAllAdmindivs();
 
     List<SubdivDto> getSubdivs();
-
-
 
 }

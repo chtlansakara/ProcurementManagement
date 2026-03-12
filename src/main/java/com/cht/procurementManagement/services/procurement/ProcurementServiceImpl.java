@@ -11,6 +11,7 @@ import com.cht.procurementManagement.repositories.*;
 import com.cht.procurementManagement.services.auth.AuthService;
 import com.cht.procurementManagement.services.notification.NotificationService;
 import com.cht.procurementManagement.utils.AuditService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,31 +57,6 @@ public class ProcurementServiceImpl implements ProcurementService{
     }
 
     @Override
-    public List<ProcurementStatusDto> getProcurementStatusList() {
-        //not sending the first status when updating the status
-        return procurementStatusRepository.findAll()
-                .stream()
-//                .filter(status-> status.getId() != 2)
-                .sorted(Comparator.comparing(ProcurementStatus::getName))
-                .map(ProcurementStatus::getProcurementStatusDto)
-                .collect(Collectors.toList());
-    }
-    @Override
-    public List<ProcurementSourceDto> getProcurementSources(){
-        return procurementSourceRepository.findAll()
-                .stream()
-                .sorted(Comparator.comparing(ProcurementSource::getName))
-                .map(ProcurementSource::getdto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<String> getProcurmentStagesList() {
-        return Arrays.stream(ProcurementStage.values()).map(Enum::name).collect(Collectors.toList());
-    }
-
-
-    @Override
     public List<UserDto> getAssignedToUsersList() {
         //only users of supplies division must be in the list
         return userRepository.findAll()
@@ -101,6 +77,35 @@ public class ProcurementServiceImpl implements ProcurementService{
     }
 
     @Override
+    public List<ProcurementStatusDto> getProcurementStatusList() {
+        //not sending the first status when updating the status
+        return procurementStatusRepository.findAll()
+                .stream()
+//                .filter(status-> status.getId() != 2)
+                .sorted(Comparator.comparing(ProcurementStatus::getName))
+                .map(ProcurementStatus::getProcurementStatusDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getProcurmentStagesList() {
+        return Arrays.stream(ProcurementStage.values()).map(Enum::name).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProcurementSourceDto> getProcurementSources(){
+        return procurementSourceRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(ProcurementSource::getName))
+                .map(ProcurementSource::getdto)
+                .collect(Collectors.toList());
+    }
+
+
+
+//Procurement CRUD:
+
+    @Override
     @Transactional
     public ProcurementResponseDto createProcurement(ProcurementCreateDto createDto) {
         //1. create procurement from dto -using mapper method
@@ -110,7 +115,7 @@ public class ProcurementServiceImpl implements ProcurementService{
             //i. fetch assignedTo User- User
 
             User assignedTo = userRepository.findById(createDto.getAssignedToUserId())
-                    .orElseThrow(() -> new RuntimeException("Assigned User not found"));
+                    .orElseThrow(() -> new EntityNotFoundException("Assigned user not found"));
             //check if the user is a supplies user
             if(!assignedTo.getUserRole().equals(UserRole.SUPPLIESUSER)){
                 throw new RuntimeException("Assigned user must be a supplies user");
@@ -122,13 +127,13 @@ public class ProcurementServiceImpl implements ProcurementService{
             //ii. fetch Vendor- Vendor
         if(createDto.getVendorId() != null){
             Vendor vendor = vendorRepository.findById(createDto.getVendorId())
-                    .orElseThrow(()-> new RuntimeException("Vendor is not found"));
+                    .orElseThrow(()-> new EntityNotFoundException("Vendor not found"));
             //set
             procurement.setVendor(vendor);
         }
         //check for source
         ProcurementSource procurementSource = procurementSourceRepository.findById(createDto.getSourceId())
-                    .orElseThrow(() -> new RuntimeException("Source is not found"));
+                    .orElseThrow(() -> new EntityNotFoundException("Source not found"));
 
         //set source
         procurement.setSource(procurementSource);
@@ -186,10 +191,9 @@ public class ProcurementServiceImpl implements ProcurementService{
 
         //7.return as dto
         return procurementMapper.toResponseDto(savedProcurement);
-
-
     }
 
+    //get procurement list
     @Override
     public List<ProcurementResponseDto> getProcurement() {
          List<Procurement> procurements = procurementRepository.findAll();
@@ -221,7 +225,7 @@ public class ProcurementServiceImpl implements ProcurementService{
         //i. fetch new assignedTo - User
         if(createDto.getAssignedToUserId()!= null) {
             User assignedTo = userRepository.findById(createDto.getAssignedToUserId())
-                    .orElseThrow(() -> new RuntimeException("Assigned User not found"));
+                    .orElseThrow(() -> new EntityNotFoundException("Assigned User not found"));
             //check if the user is a supplies user
             if (!assignedTo.getUserRole().equals(UserRole.SUPPLIESUSER)) {
                 throw new RuntimeException("Assigned user must be a supplies user");
@@ -234,9 +238,18 @@ public class ProcurementServiceImpl implements ProcurementService{
         //ii. fetch Vendor- Vendor
         if(createDto.getVendorId() != null){
             Vendor vendor = vendorRepository.findById(createDto.getVendorId())
-                    .orElseThrow(()-> new RuntimeException("Vendor is not found"));
+                    .orElseThrow(()-> new EntityNotFoundException("Vendor not found"));
             //set
             existingProcurement.setVendor(vendor);
+        }
+
+        //check for source
+        if(createDto.getSourceId()!= null && !createDto.getSourceId().equals(existingProcurement.getSource().getId())) {
+            ProcurementSource procurementSource = procurementSourceRepository.findById(createDto.getSourceId())
+                    .orElseThrow(() -> new EntityNotFoundException("Source not found"));
+
+            //set source
+            existingProcurement.setSource(procurementSource);
         }
 
         //iii. assign Request
@@ -246,6 +259,7 @@ public class ProcurementServiceImpl implements ProcurementService{
         }
         //validate request ids - using class method
         Request requestNew= validateAsValidRequest(createDto.getRequestId(),false);
+
         //if requests in the list has 'procurement created' then it should be equal to the one already in the procurement
         //i. get already procurement request list
         Request requestOld =  existingProcurement.getRequest();
@@ -273,7 +287,7 @@ public class ProcurementServiceImpl implements ProcurementService{
         //5. set updated details
         Long loggedUserId = authService.getLoggedUserDto().getId();
         User updatedBy = userRepository.findById(loggedUserId)
-                .orElseThrow(()-> new RuntimeException("Current user is not found"));
+                .orElseThrow(()-> new EntityNotFoundException("Current user not found"));
         existingProcurement.setLastUpdatedBy(updatedBy);
         existingProcurement.setLastUpdatedOn(new Date());
 
@@ -332,6 +346,7 @@ public class ProcurementServiceImpl implements ProcurementService{
 
 
     }
+
     //for update form - we need request list with either approved or in procurement
     @Transactional
     @Override
@@ -355,7 +370,7 @@ public class ProcurementServiceImpl implements ProcurementService{
 
         //1. find procurement to update
         Procurement existingProcurement = procurementRepository.findById(procurementId)
-                .orElseThrow(()-> new RuntimeException("Procurement is not found"));
+                .orElseThrow(()-> new EntityNotFoundException("Procurement not found"));
 
         //2. to update the assigned user can not be null
         if(existingProcurement.getAssignedTo() == null){
@@ -382,10 +397,8 @@ public class ProcurementServiceImpl implements ProcurementService{
             throw new RuntimeException("The stage should be selected");
         }
 
-
         //save previous values for audit log before updating (for audit log)
         String previousStage = existingProcurement.getProcurementStage().toString();
-
 
     //taking care of status added
         if(statusUpdateDto.getProcurementStatusId() != null) {
@@ -395,7 +408,7 @@ public class ProcurementServiceImpl implements ProcurementService{
             }
 
             ProcurementStatus changedStatus = procurementStatusRepository.findById(statusUpdateDto.getProcurementStatusId())
-                    .orElseThrow(() -> new RuntimeException("Status selected is not found"));
+                    .orElseThrow(() -> new EntityNotFoundException("Status selected not found"));
             //change
             existingProcurement.setStatus(changedStatus);
             //save to method variable
@@ -404,7 +417,6 @@ public class ProcurementServiceImpl implements ProcurementService{
             //remove status if not added to update-status
             existingProcurement.setStatus(null);
         }
-
 
         //extra - check if the stage changed to completed - add completed date to procurement
         boolean isCompletedStage = statusUpdateDto.getProcurementStage().equals(ProcurementStage.PAID_AND_COMPLETED.toString());
@@ -426,12 +438,10 @@ public class ProcurementServiceImpl implements ProcurementService{
 
         //5. find the updating user
         User updatedBy = userRepository.findById(loggedUserId)
-                .orElseThrow(()-> new RuntimeException("Logged user not found"));
-
+                .orElseThrow(()-> new EntityNotFoundException("Logged user not found"));
 
         //5.update the stage of procurement
        existingProcurement.setProcurementStage(ProcurementStage.valueOf(statusUpdateDto.getProcurementStage()));
-
 
         //6. create new statusUpdate object
         ProcurementStatusUpdate statusUpdate= new ProcurementStatusUpdate();
@@ -477,7 +487,6 @@ public class ProcurementServiceImpl implements ProcurementService{
 
         );
 
-
         //8.return as response dto
         return savedStatusUpdate.getDto();
     }
@@ -496,9 +505,11 @@ public class ProcurementServiceImpl implements ProcurementService{
     @Transactional
     public void deleteProcurement(Long id) {
         Procurement existingProcurement = validateToUpdateDeleteProcurement(id);
+        // to create audit log
+        User updatedBy = getLoggedUser();
         //update related request
         Request request = requestRepository.findById(existingProcurement.getRequest().getId())
-                .orElseThrow(() -> new RuntimeException("Related request is not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Related request not found"));
         //change status of request
         request.setStatus(RequestStatus.PENDING_PROCUREMENT);
         //save to db
@@ -516,16 +527,13 @@ public class ProcurementServiceImpl implements ProcurementService{
 //        //save requests in db
 //        requestRepository.saveAll(existingRequests);
 
+
         //delete related notifications
         notificationService.deleteNotifications(AuditEntityType.PROCUREMENT, id);
 
         //delete procurement
         procurementRepository.deleteById(id);
 
-
-
-        //create audit log
-        User updatedBy = getLoggedUser();
         auditService.log(
                 updatedBy.getEmail(),
                 updatedBy.getEmployeeId(),
@@ -538,10 +546,12 @@ public class ProcurementServiceImpl implements ProcurementService{
         );
     }
 
+//class methods
+
     private Procurement validateToUpdateDeleteProcurement(Long id){
         //1. find procurement to update
         Procurement existingProcurement = procurementRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("Procurement is not found"));
+                .orElseThrow(()-> new EntityNotFoundException("Procurement not found"));
 
         //2.check for correct stage (not completed)
         ProcurementStage stage = existingProcurement.getProcurementStage();
@@ -567,7 +577,7 @@ public class ProcurementServiceImpl implements ProcurementService{
     private Request validateAsValidRequest(Long requestId, boolean isCreate){
         //find request object
         Request request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Request selected is not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Request selected is not found"));
 
 //        if(requests.size() != requestIds.size()){
 //            throw new RuntimeException("Some requests are not found");
@@ -616,7 +626,7 @@ private User getLoggedUser(){
         Long loggedUserId = authService.getLoggedUserDto().getId();
         //find in db
     User loggedUser = userRepository.findById(loggedUserId)
-            .orElseThrow(() -> new RuntimeException("Logged user not found"));
+            .orElseThrow(() -> new EntityNotFoundException("Logged user not found"));
     return loggedUser;
 }
 
