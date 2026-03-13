@@ -2,7 +2,11 @@ package com.cht.procurementManagement.entities;
 
 import com.cht.procurementManagement.dto.ProcurementSourceDto;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
+@Builder
 @Entity
 public class ProcurementSource {
 

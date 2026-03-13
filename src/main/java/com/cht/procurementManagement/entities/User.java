@@ -4,6 +4,9 @@ import com.cht.procurementManagement.dto.UserDto;
 import com.cht.procurementManagement.enums.UserRole;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.jspecify.annotations.Nullable;
@@ -14,7 +17,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 public class User implements UserDetails {
     @Id

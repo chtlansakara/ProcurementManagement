@@ -3,7 +3,13 @@ package com.cht.procurementManagement.entities;
 import com.cht.procurementManagement.dto.AdmindivDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 public class Admindiv {
     @Id

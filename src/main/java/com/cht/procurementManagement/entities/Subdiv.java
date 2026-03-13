@@ -3,9 +3,14 @@ package com.cht.procurementManagement.entities;
 import com.cht.procurementManagement.dto.SubdivDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 public class Subdiv {
     @Id

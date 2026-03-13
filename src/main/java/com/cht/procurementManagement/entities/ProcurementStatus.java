@@ -2,7 +2,13 @@ package com.cht.procurementManagement.entities;
 
 import com.cht.procurementManagement.dto.ProcurementStatusDto;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class ProcurementStatus {
     @Id

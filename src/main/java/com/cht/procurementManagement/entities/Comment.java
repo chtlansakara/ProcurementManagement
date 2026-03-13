@@ -3,11 +3,17 @@ package com.cht.procurementManagement.entities;
 import com.cht.procurementManagement.dto.CommentDto;
 import com.cht.procurementManagement.enums.ReviewType;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.Date;
 
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 public class Comment {
     @Id
