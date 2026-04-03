@@ -4,11 +4,13 @@ import com.cht.procurementManagement.dto.ApprovalDto;
 import com.cht.procurementManagement.dto.CommentDto;
 import com.cht.procurementManagement.dto.RequestDto;
 import com.cht.procurementManagement.dto.SubdivDto;
+import com.cht.procurementManagement.dto.procurement.ProcurementReportDTO;
 import com.cht.procurementManagement.dto.procurement.ProcurementResponseDto;
 import com.cht.procurementManagement.entities.Admindiv;
 import com.cht.procurementManagement.entities.Subdiv;
 import com.cht.procurementManagement.services.admindiv.AdminDivService;
 
+import java.util.Date;
 import java.util.List;
 
 public interface SubDivService {
@@ -42,4 +44,6 @@ public interface SubDivService {
     List<ProcurementResponseDto> getAllProcurementOnlyBySubdivId();
 
     ProcurementResponseDto getProcurementByIdForSubdiv(Long id);
+
+    List<ProcurementReportDTO> getAllProcurementForSubdivReport(Date startDate, Date endDate);
 }

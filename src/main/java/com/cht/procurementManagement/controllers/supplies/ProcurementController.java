@@ -29,12 +29,12 @@ public class ProcurementController {
     @PostMapping("/procurement")
     public ResponseEntity<?> createProcurement(@RequestBody ProcurementCreateDto createDto){
         ProcurementResponseDto createdProcurementResponseDto = procurementService.createProcurement(createDto);
-        if(createdProcurementResponseDto == null){
+        if (createdProcurementResponseDto == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Procurement couldn't be created.");
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProcurementResponseDto);
-    }
 
+    }
     @PutMapping("/procurement/{id}")
     public ResponseEntity<?> updateProcurement(@PathVariable Long id, @RequestBody ProcurementCreateDto createDto){
         ProcurementResponseDto updatedDto = procurementService.updateProcurement(id,createDto);
@@ -46,12 +46,9 @@ public class ProcurementController {
 
     @DeleteMapping("/procurement/{id}")
     public ResponseEntity<?> deleteProcurement(@PathVariable Long id){
-        try {
-            procurementService.deleteProcurement(id);
-            return ResponseEntity.ok(null);
-        }catch(Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+        procurementService.deleteProcurement(id);
+        return ResponseEntity.ok(null);
+
     }
 
     @GetMapping("/procurement")
@@ -61,11 +58,7 @@ public class ProcurementController {
 
     @GetMapping("/procurement/{id}")
     public ResponseEntity<?> getProcurementById(@PathVariable Long id){
-        try{
-            return ResponseEntity.ok(procurementService.getProcurementById(id));
-        }catch(Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
+        return ResponseEntity.ok(procurementService.getProcurementById(id));
     }
 
     //change status & create update-status object for a procurement

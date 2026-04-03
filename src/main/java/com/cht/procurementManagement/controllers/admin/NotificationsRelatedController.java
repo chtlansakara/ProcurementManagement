@@ -1,5 +1,6 @@
 package com.cht.procurementManagement.controllers.admin;
 
+import com.cht.procurementManagement.enums.AuditEntityType;
 import com.cht.procurementManagement.services.notification.NotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,4 +23,23 @@ public class NotificationsRelatedController {
         notificationService.deleteAllNotifications();
         return ResponseEntity.ok(null);
     }
+
+  //delete for a procurement
+    @DeleteMapping("/notifications-delete/procurement/{id}")
+    public ResponseEntity<Void> deleteAllNotificationsForProcurement(@PathVariable Long id) {
+        notificationService.deleteNotifications(AuditEntityType.PROCUREMENT, id);
+        return ResponseEntity.ok(null);
+    }
+
+
+    //delete for a request
+    @DeleteMapping("/notifications-delete/request/{id}")
+    public ResponseEntity<Void> deleteAllNotificationsForRequest(@PathVariable Long id) {
+        notificationService.deleteNotifications(AuditEntityType.REQUEST, id);
+        return ResponseEntity.ok(null);
+    }
+
+
+
+
 }

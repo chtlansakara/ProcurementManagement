@@ -2,6 +2,7 @@ package com.cht.procurementManagement.services.AuditLog;
 
 import com.cht.procurementManagement.dto.AuditLogDto;
 import com.cht.procurementManagement.entities.AuditLog;
+import com.cht.procurementManagement.enums.AuditEntityType;
 import com.cht.procurementManagement.repositories.AuditLogRepository;
 import org.springframework.stereotype.Service;
 
@@ -25,5 +26,10 @@ public class AuditLogImpl implements AuditLogService{
                 .sorted(Comparator.comparing(AuditLog::getId).reversed())
                 .map(AuditLog::getDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteAuditlogs(AuditEntityType type, Long entityId) {
+        auditLogRepository.deleteAllByEntityTypeAndEntityId(type, entityId);
     }
 }

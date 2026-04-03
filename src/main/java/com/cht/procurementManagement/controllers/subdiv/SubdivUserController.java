@@ -3,11 +3,16 @@ package com.cht.procurementManagement.controllers.subdiv;
 import com.cht.procurementManagement.dto.ProcurementStatusDto;
 import com.cht.procurementManagement.dto.RequestDto;
 import com.cht.procurementManagement.services.procurement.ProcurementService;
+import com.cht.procurementManagement.services.report.ReportService;
 import com.cht.procurementManagement.services.subdiv.SubDivService;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -16,14 +21,58 @@ import java.util.List;
 public class SubdivUserController {
     private final SubDivService subDivService;
     private final ProcurementService procurementService;
+    private final ReportService reportService;
 
 
     public SubdivUserController(SubDivService subDivService,
-                                ProcurementService procurementService) {
+                                ProcurementService procurementService,
+                                ReportService reportService) {
         this.subDivService = subDivService;
 
         this.procurementService = procurementService;
+        this.reportService = reportService;
     }
+
+    //sub-div procurement report
+    @GetMapping("/procurement-report/")
+    public ResponseEntity<byte[]> generateProcurementReportWFormat(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
+            @RequestParam (defaultValue = "pdf") String format) {
+
+        try {
+            byte[] file = reportService.generateSubdivProcurementReportWFormat(startDate, endDate, format);
+            //if not successful
+            if(file == null) {
+                return ResponseEntity.badRequest()
+                        .body(("Unsupported format: " + format).getBytes());
+            }
+            //set content type and file name based on format
+            String contentType;
+            String fileName;
+            if (format.equalsIgnoreCase("pdf")) {
+                contentType = "application/pdf";
+                fileName = "subdivision_procurement_report.pdf";
+            }else if(format.equalsIgnoreCase("excel")){
+                contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                fileName = "subdivision_procurement_report.xlsx";
+            }else{
+                return ResponseEntity.badRequest()
+                        .body(("Unsupported format: " + format).getBytes());
+            }
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=" +fileName)
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .body(file);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
 
     //get procurement of subdiv
     @GetMapping("/procurement")

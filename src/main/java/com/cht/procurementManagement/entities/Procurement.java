@@ -4,6 +4,7 @@ import com.cht.procurementManagement.enums.ProcurementStage;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -71,10 +72,29 @@ public class Procurement {
     private User lastUpdatedBy;
 
 
+    //mapped
+    @OneToMany(
+            mappedBy = "procurement",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<ProcurementStatusUpdate> statusUpdates = new ArrayList<>();
+
+
+
 
 
 //get-set methods
 
+
+    public List<ProcurementStatusUpdate> getStatusUpdates() {
+        return statusUpdates;
+    }
+
+    public void setStatusUpdates(List<ProcurementStatusUpdate> statusUpdates) {
+        this.statusUpdates = statusUpdates;
+    }
 
     public Long getId() {
         return id;

@@ -4,10 +4,12 @@ import com.cht.procurementManagement.dto.ApprovalDto;
 import com.cht.procurementManagement.dto.CommentDto;
 import com.cht.procurementManagement.dto.RequestDto;
 import com.cht.procurementManagement.dto.SubdivDto;
+import com.cht.procurementManagement.dto.procurement.ProcurementReportDTO;
 import com.cht.procurementManagement.dto.procurement.ProcurementResponseDto;
 import com.cht.procurementManagement.entities.Request;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 public interface AdminDivService {
@@ -60,6 +62,8 @@ public interface AdminDivService {
     List<ProcurementResponseDto> getAllProcurementOnlyByAdmindivId();
 
     ProcurementResponseDto getProcurementByIdForAdmindiv(Long id);
+
+    List<ProcurementReportDTO> getAllProcurementForAdmindivReport(Date startDate, Date endDate);
 
 
 }

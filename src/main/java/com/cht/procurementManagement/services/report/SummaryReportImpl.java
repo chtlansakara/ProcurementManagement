@@ -25,8 +25,7 @@ public class SummaryReportImpl implements SummaryReportService{
 
     @Override
     public byte[] generateSummaryReportWFormat(Date startDate, Date endDate, String fileFormat) throws JRException {
-        //file location to save exported file
-        String path = "D:\\Procurement Mangement - MIT Project 2026";
+
 
         //1. get data from db
         List<SummaryReportDTO> reportData = procurementRepository.findSummaryReportData(startDate,endDate);

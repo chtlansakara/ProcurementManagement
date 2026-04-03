@@ -16,9 +16,9 @@
     </field>
     <field name="email" class="java.lang.String">
     </field>
+
     <background splitType="Stretch"/>
     <title height="70" splitType="Stretch">
-
         <element kind="staticText" uuid="3eb8e1ab-7e38-4368-89db-62b6501a8c67" x="0" y="13" width="263" height="33" vTextAlign="Middle" style="Title">
             <text><![CDATA[Users Information]]></text>
         </element>
@@ -26,6 +26,7 @@
             <text><![CDATA[Supplies Application]]></text>
         </element>
     </title>
+
     <pageHeader splitType="Stretch"/>
     <columnHeader height="36" splitType="Stretch">
         <element kind="line" uuid="d69c6691-e92e-45c5-bf2d-c1dc15dabb91" positionType="FixRelativeToBottom" x="0" y="35" width="555" height="1">

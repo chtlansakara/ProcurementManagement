@@ -16,7 +16,7 @@ public interface RequestService {
 
     List<RequestDto> getAllRequests();
 
-//    void deleteRequest(Long requestId);
+    void deleteRequestById(Long requestId);
 
     void deleteRequest (Request request);
 }

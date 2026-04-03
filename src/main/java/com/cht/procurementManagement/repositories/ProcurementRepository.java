@@ -1,5 +1,6 @@
 package com.cht.procurementManagement.repositories;
 
+import com.cht.procurementManagement.dto.procurement.ProcurementReportDTO;
 import com.cht.procurementManagement.dto.procurement.SummaryReportDTO;
 import com.cht.procurementManagement.entities.Procurement;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -35,4 +36,67 @@ public interface ProcurementRepository extends JpaRepository<Procurement, Long> 
             @Param("startDate")Date startDate,
             @Param("endDate")Date endDate
             );
+
+    @Query("""
+        SELECT new com.cht.procurementManagement.dto.procurement.ProcurementReportDTO(
+            p.id,
+            p.name,
+            p.quantity,
+            p.category,
+            p.method,
+            p.authorityLevel,
+            p.priorityStatus,
+            p.commencedDate,
+            s.name,
+            CAST(p.procurementStage AS string),
+            p.estimatedAmount,
+            r.id,
+            a.name
+        )
+        FROM Procurement p
+        LEFT JOIN p.source s
+        LEFT JOIN p.request r
+        LEFT JOIN r.admindiv a
+        WHERE p.createdOn BETWEEN :startDate AND :endDate
+        ORDER BY p.procurementStage
+    """)
+    List<ProcurementReportDTO> findProcurementReportData(
+            @Param("startDate")Date startDate,
+            @Param("endDate")Date endDate
+    );
+
+
+    @Query("""
+        SELECT new com.cht.procurementManagement.dto.procurement.ProcurementReportDTO(
+            p.id,
+            p.name,
+            p.quantity,
+            p.category,
+            p.method,
+            p.authorityLevel,
+            p.priorityStatus,
+            p.commencedDate,
+            s.name,
+            CAST(p.procurementStage AS string),
+            p.estimatedAmount,
+            r.id,
+            a.name
+        )
+        FROM Procurement p
+        LEFT JOIN p.source s
+        LEFT JOIN p.request r
+        LEFT JOIN r.admindiv a
+        WHERE p.createdOn BETWEEN :startDate AND :endDate
+        AND r.id IN :requestIds
+        ORDER BY p.procurementStage
+    """)
+    List<ProcurementReportDTO> findDivisionProcurementReportData(
+            @Param("startDate")Date startDate,
+            @Param("endDate")Date endDate,
+            @Param("requestIds") List<Long> requestIds
+    );
+
+
+
+
 }

@@ -235,20 +235,20 @@ public class RequestServiceImpl implements  RequestService{
                 .map(Request::getRequestDto)
                 .collect(Collectors.toList());
     }
-//    @Transactional
-//    @Override
-//    public void deleteRequest(Long requestId) {
-//        Optional<Request> optionalRequest = requestRepository.findById(requestId);
-//
-//        if(!optionalRequest.isPresent()){
-//            throw new RuntimeException("Request is not found");
-//        }
-//
-//        //delete related notifications
-//        notificationService.deleteNotifications(AuditEntityType.REQUEST, requestId);
-//        requestRepository.deleteById(requestId);
-//
-//    }
+    @Transactional
+    @Override
+    public void deleteRequestById(Long requestId) {
+        Optional<Request> optionalRequest = requestRepository.findById(requestId);
+
+        if(!optionalRequest.isPresent()){
+            throw new RuntimeException("Request is not found");
+        }
+
+        //delete related notifications
+        notificationService.deleteNotifications(AuditEntityType.REQUEST, requestId);
+        requestRepository.deleteById(requestId);
+
+    }
 
     //USED ONE
     @Transactional
@@ -259,6 +259,8 @@ public class RequestServiceImpl implements  RequestService{
 //        requestRepository.deleteById(request.getId());
         requestRepository.delete(request);
     }
+
+
 
 
 }

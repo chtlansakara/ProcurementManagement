@@ -4,9 +4,14 @@ import com.cht.procurementManagement.dto.procurement.ProcurementStatusUpdateDto;
 import com.cht.procurementManagement.enums.ProcurementStage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
-
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class ProcurementStatusUpdate {
     @Id
@@ -26,8 +31,10 @@ public class ProcurementStatusUpdate {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "procurement_id", nullable = false)
+
     @JsonIgnore
     private Procurement procurement;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "createdBy_id", nullable = false)
     @JsonIgnore

@@ -173,6 +173,20 @@ public class ProcurementServiceImpl implements ProcurementService{
         validatedRequest.setStatus(RequestStatus.PROCUREMENT_CREATED);
         requestRepository.save(validatedRequest);
 
+
+        //create audit string
+        StringBuilder auditDetails = new StringBuilder();
+
+        auditDetails.append("Created procurement ID:").append(savedProcurement.getId()).append(" - ");
+        auditDetails.append(savedProcurement.getName());
+        auditDetails.append(" (request ID:").append(createDto.getRequestId()).append(")");
+
+        //add vendor info - only if there is
+        if(createDto.getVendorId() != null){
+            auditDetails.append(", with vendor ID:").append(createDto.getVendorId());
+            auditDetails.append(" and name: ").append(savedProcurement.getVendor().getName());
+        }
+
         //8. Add to audit log
         auditService.log(
                 loggedUser.getEmail(),
@@ -180,10 +194,7 @@ public class ProcurementServiceImpl implements ProcurementService{
                 AuditAction.CREATED,
                 AuditEntityType.PROCUREMENT,
                 savedProcurement.getId(),
-                "Created procurement with id: "+ savedProcurement.getId() +" including request ids: "
-                        +createDto.getRequestId()+
-                        " and vendor id: "+createDto.getVendorId()+
-                        " and name of procurement: " + createDto.getName()
+                auditDetails.toString()
         );
 
         //send notifications
@@ -210,19 +221,18 @@ public class ProcurementServiceImpl implements ProcurementService{
     @Override
     @Transactional
     public ProcurementResponseDto updateProcurement(Long id, ProcurementCreateDto createDto) {
-        //find the procurement - using class method
+        //1. find the procurement - using class method
         Procurement existingProcurement = validateToUpdateDeleteProcurement(id);
 
-        //finding existing vendor name & id (for audit log)
-        Vendor oldVendor = existingProcurement.getVendor();
-        String oldVendorName = oldVendor.getName();
-        Long oldVendorId = oldVendor.getId();
-
-        //finding existing request id
+        //storing existing information
         Long oldRequestId = existingProcurement.getRequest().getId();
+        String procurementName = existingProcurement.getName();
+        //finding existing vendor name & id (for audit log)
+        boolean isVendorChanged = false;
+        String oldVendorInfo = null;
 
-        //5. find other objects from ids in dto
-        //i. fetch new assignedTo - User
+        //2. find other objects from ids in dto
+            //i. fetch new assignedTo - User
         if(createDto.getAssignedToUserId()!= null) {
             User assignedTo = userRepository.findById(createDto.getAssignedToUserId())
                     .orElseThrow(() -> new EntityNotFoundException("Assigned User not found"));
@@ -236,12 +246,25 @@ public class ProcurementServiceImpl implements ProcurementService{
         }
 
         //ii. fetch Vendor- Vendor
+
+        //for audit log
+        if(existingProcurement.getVendor() != null){
+            Vendor oldVendor = existingProcurement.getVendor();
+            oldVendorInfo =  " and vendor with ID:" + oldVendor.getId() + " with name: "+ oldVendor.getName();
+        }
+
         if(createDto.getVendorId() != null){
+            //for audit log
+            if(existingProcurement.getVendor() != null && !createDto.getVendorId().equals(existingProcurement.getVendor().getId())){
+                isVendorChanged = true;
+            }
+
             Vendor vendor = vendorRepository.findById(createDto.getVendorId())
                     .orElseThrow(()-> new EntityNotFoundException("Vendor not found"));
             //set
             existingProcurement.setVendor(vendor);
         }
+
 
         //check for source
         if(createDto.getSourceId()!= null && !createDto.getSourceId().equals(existingProcurement.getSource().getId())) {
@@ -257,7 +280,7 @@ public class ProcurementServiceImpl implements ProcurementService{
         if(createDto.getRequestId() == null ) {
             throw new RuntimeException("Request is empty");
         }
-        //validate request ids - using class method
+        //validate request id - using class method
         Request requestNew= validateAsValidRequest(createDto.getRequestId(),false);
 
         //if requests in the list has 'procurement created' then it should be equal to the one already in the procurement
@@ -269,14 +292,6 @@ public class ProcurementServiceImpl implements ProcurementService{
             }
         }
 
-
-//        for(Request request: requestsNew){
-//            if(request.getStatus().equals(RequestStatus.PROCUREMENT_CREATED)){
-//                if(!requestsOld.contains(request)){
-//                    throw new RuntimeException("Can not select requests in other procurement");
-//                }
-//            }
-//        }
         //set
         existingProcurement.setRequest(requestNew);
 
@@ -302,49 +317,45 @@ public class ProcurementServiceImpl implements ProcurementService{
             requestRepository.save(requestOld);
         }
 
-        //save requests with procurement number
-//        for(Request request : requestsNew){
-//            request.setStatus(RequestStatus.PROCUREMENT_CREATED);
-//            request.setProcurement(updatedProcurement);
-//        }
-        //remove procurement and status from the removed requests of existing list
-        //find removed request list
-//        List<Request> removedRequests = new ArrayList<>();
-//        for(Request request: requestsOld){
-//            if(!requestsNew.contains(request)){
-//                removedRequests.add(request);
-//            }
-//        }
-        //change its request status and remove procurement
-//        if(!removedRequests.isEmpty()) {
-//            for (Request request : removedRequests){
-//                request.setStatus(RequestStatus.PENDING_PROCUREMENT);
-//                request.setProcurement(null);
-//            }
-//            //save to db
-//            requestRepository.saveAll(removedRequests);
-//        }
-//
-//        requestRepository.saveAll(requestsNew);
 
         //7.create audit log
+        StringBuilder auditDetails = new StringBuilder();
+        auditDetails.append("Updated procurement ID:").append(id).append(" - ");
+        auditDetails.append(procurementName);
+        auditDetails.append(" (request ID:").append(oldRequestId).append(")");
+        //add update request info - only if the request is changed
+        if(!requestNew.getId().equals(oldRequestId)){
+            auditDetails.append(", changed to request ID:").append(createDto.getRequestId());
+        }
+        //add previous vendor info - only if there was one
+        if(oldVendorInfo!=null){
+            auditDetails.append(oldVendorInfo);
+        }
+        //add new vendor info - only if there is
+        if(createDto.getVendorId() != null){
+            if(isVendorChanged){
+                auditDetails.append(", updated to vendor with ID:").append(createDto.getVendorId());
+                auditDetails.append(" and name: ").append(existingProcurement.getVendor().getName());
+            }else{
+                auditDetails.append(", with vendor ID:").append(createDto.getVendorId());
+                auditDetails.append(" and name: ").append(existingProcurement.getVendor().getName());
+            }
+        }
+
+
+
         auditService.log(
                 updatedBy.getEmail(),
                 updatedBy.getEmployeeId(),
                 AuditAction.UPDATED,
                 AuditEntityType.PROCUREMENT,
                 updatedProcurement.getId(),
-                "Updated procurement with id:" +id + " included request ids: "+
-                        oldRequestId + " and vendor id: " + oldVendorId + " and name: "+ oldVendorName +
-                        " updated to include request ids: " +createDto.getRequestId()+
-                        " and vendor id: "+createDto.getVendorId()
+                auditDetails.toString()
 
         );
 
         //8.return as response dto
         return procurementMapper.toResponseDto(updatedProcurement);
-
-
     }
 
     //for update form - we need request list with either approved or in procurement
@@ -366,7 +377,10 @@ public class ProcurementServiceImpl implements ProcurementService{
     @Transactional
     @Override
     public ProcurementStatusUpdateDto updateStatus(Long procurementId, ProcurementStatusUpdateDto statusUpdateDto) {
+        //for audit log
         ProcurementStatus newStatus = null;
+        String oldStatus = null;
+        boolean isStageUpdated = false;
 
         //1. find procurement to update
         Procurement existingProcurement = procurementRepository.findById(procurementId)
@@ -399,6 +413,7 @@ public class ProcurementServiceImpl implements ProcurementService{
 
         //save previous values for audit log before updating (for audit log)
         String previousStage = existingProcurement.getProcurementStage().toString();
+        if(!previousStage.equals(statusUpdateDto.getProcurementStage())) isStageUpdated = true;
 
     //taking care of status added
         if(statusUpdateDto.getProcurementStatusId() != null) {
@@ -409,6 +424,11 @@ public class ProcurementServiceImpl implements ProcurementService{
 
             ProcurementStatus changedStatus = procurementStatusRepository.findById(statusUpdateDto.getProcurementStatusId())
                     .orElseThrow(() -> new EntityNotFoundException("Status selected not found"));
+
+            if(existingProcurement.getStatus() != null){
+                oldStatus = existingProcurement.getStatus().getName();
+            }
+
             //change
             existingProcurement.setStatus(changedStatus);
             //save to method variable
@@ -473,6 +493,35 @@ public class ProcurementServiceImpl implements ProcurementService{
         //send notifications
         notificationService.onProcurementStatusChanged(savedProcurement);
 
+        //create audit log
+        StringBuilder auditDetails = new StringBuilder();
+        auditDetails.append("Status updated of procurement ID:").append(procurementId).append(" - ");
+        auditDetails.append(savedProcurement.getName());
+        auditDetails.append(" (request ID:").append(savedProcurement.getRequest().getId()).append(")");
+        //add new stage info - only if updated to new stage
+        if(statusUpdateDto.getProcurementStage() != null){
+            if(isStageUpdated){
+                auditDetails.append(", updated from stage: ").append(previousStage);
+                auditDetails.append(" to stage: ").append(savedStatusUpdate.getProcurementStage().toString());
+            }else{
+                auditDetails.append(" with stage: ").append(savedStatusUpdate.getProcurementStage().toString());
+            }
+        }
+        //add status change if there is both old and new
+        if(newStatus != null && oldStatus != null){
+            auditDetails.append(". Status updated from ").append(oldStatus);
+            auditDetails.append(" to status: ").append(newStatus.getName()).append(".");
+        }
+        //add new status
+        if(oldStatus == null && newStatus!= null){
+            auditDetails.append(". Status changed to ").append(newStatus.getName()).append(".");
+        }
+        //add comments if any
+        if(statusUpdateDto.getComment() != null){
+            auditDetails.append(" Comments added as '").append(statusUpdateDto.getComment()).append("'.");
+        }
+
+
         //7. add to audit log
         auditService.log(
                 updatedBy.getEmail(),
@@ -480,10 +529,7 @@ public class ProcurementServiceImpl implements ProcurementService{
                 AuditAction.STATUS_CHANGED,
                 AuditEntityType.PROCUREMENT,
                 savedProcurement.getId(),
-                "Status of procurement " +procurementId + " updated  from stage: "+
-                       previousStage + " to stage: " + savedStatusUpdate.getProcurementStage().toString() +
-                       " with comments '"+
-                        statusUpdateDto.getComment() + "'."
+                auditDetails.toString()
 
         );
 
@@ -505,28 +551,29 @@ public class ProcurementServiceImpl implements ProcurementService{
     @Transactional
     public void deleteProcurement(Long id) {
         Procurement existingProcurement = validateToUpdateDeleteProcurement(id);
-        // to create audit log
+
+        // for audit log
         User updatedBy = getLoggedUser();
+
         //update related request
         Request request = requestRepository.findById(existingProcurement.getRequest().getId())
                 .orElseThrow(() -> new EntityNotFoundException("Related request not found"));
         //change status of request
         request.setStatus(RequestStatus.PENDING_PROCUREMENT);
+
         //save to db
         requestRepository.save(request);
 
-
-        //find request objects
-//        List<Long> requestIds = requests.stream().map(Request::getId).collect(Collectors.toList());
-//        List<Request> existingRequests = requestRepository.findAllById(requestIds);
-//        //update status of requests
-//        for(Request request : existingRequests){
-//            request.setStatus(RequestStatus.PENDING_PROCUREMENT);
-//            request.setProcurement(null);
-//        }
-//        //save requests in db
-//        requestRepository.saveAll(existingRequests);
-
+        //create audit string
+        StringBuilder auditDetails = new StringBuilder();
+        auditDetails.append("Deleted procurement ID:").append(existingProcurement.getId()).append(" - ");
+        auditDetails.append(existingProcurement.getName());
+        auditDetails.append(" (request ID:").append(request.getId()).append(")");
+        //add vendor info - only if there is
+        if(existingProcurement.getVendor() != null){
+            auditDetails.append(", with vendor ID:").append(existingProcurement.getVendor().getId());
+            auditDetails.append(" and name: ").append(existingProcurement.getVendor().getName());
+        }
 
         //delete related notifications
         notificationService.deleteNotifications(AuditEntityType.PROCUREMENT, id);
@@ -540,9 +587,7 @@ public class ProcurementServiceImpl implements ProcurementService{
                 AuditAction.DELETED,
                 AuditEntityType.PROCUREMENT,
                 id,
-                "Deleted procurement including request id: "
-                        + request.getId()+
-                        " ,and title: "+existingProcurement.getName()
+                auditDetails.toString()
         );
     }
 
@@ -579,55 +624,29 @@ public class ProcurementServiceImpl implements ProcurementService{
         Request request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new EntityNotFoundException("Request selected is not found"));
 
-//        if(requests.size() != requestIds.size()){
-//            throw new RuntimeException("Some requests are not found");
-//        }
-
         if(isCreate) {
             if(!request.getStatus().equals(RequestStatus.PENDING_PROCUREMENT)){
                 throw new RuntimeException("Request is not ready for procurement");
             }
-
-            //check for correct status of each request - should be pe
-//            requests.stream()
-//                    .filter(request -> !request.getStatus().equals(RequestStatus.PENDING_PROCUREMENT))
-//                    .findFirst()
-//                    .ifPresent(invalidRequest -> {
-//                        throw new RuntimeException("Some requests are not ready for procurement");
-//                    });
         }else{
             if(!request.getStatus().equals(RequestStatus.PENDING_PROCUREMENT) &&
             !(request.getStatus().equals(RequestStatus.PROCUREMENT_CREATED))){
                 throw new RuntimeException("Request can not be added for procurement");
             }
-            //check for 2 correct status of each request - the one already have should be allowed -
-//            requests.stream()
-//                    .filter(request ->
-//                            !request.getStatus().equals(RequestStatus.PROCUREMENT_CREATED)
-//                            && !request.getStatus().equals(RequestStatus.PENDING_PROCUREMENT))
-//                    .findFirst()
-//                    .ifPresent(invalidRequest -> {
-//                        throw new RuntimeException("Some requests can not be added for a procurement.");
-//                    });
         }
 
         return request;
+    }
 
+    private User getLoggedUser(){
 
-//        //count ids sent
-//        Long uniqueInputCount = requestIds.stream().distinct().count();
-//        //count from db
-//        Long dbCount = requestRepository.countByIdIn(requestIds);
-//        //compare to find if its same
-//        return uniqueInputCount  == dbCount;
-}
-
-private User getLoggedUser(){
         Long loggedUserId = authService.getLoggedUserDto().getId();
+
         //find in db
-    User loggedUser = userRepository.findById(loggedUserId)
-            .orElseThrow(() -> new EntityNotFoundException("Logged user not found"));
-    return loggedUser;
-}
+        User loggedUser = userRepository.findById(loggedUserId)
+                .orElseThrow(() -> new EntityNotFoundException("Logged user not found"));
+
+        return loggedUser;
+    }
 
 }

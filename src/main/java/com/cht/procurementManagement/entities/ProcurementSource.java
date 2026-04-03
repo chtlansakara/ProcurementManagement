@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Builder
 @Entity
+
 public class ProcurementSource {
 
     @Id

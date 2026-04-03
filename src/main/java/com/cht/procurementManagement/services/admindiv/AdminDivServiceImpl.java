@@ -1,6 +1,7 @@
 package com.cht.procurementManagement.services.admindiv;
 
 import com.cht.procurementManagement.dto.*;
+import com.cht.procurementManagement.dto.procurement.ProcurementReportDTO;
 import com.cht.procurementManagement.dto.procurement.ProcurementResponseDto;
 import com.cht.procurementManagement.entities.*;
 import com.cht.procurementManagement.enums.ApprovalType;
@@ -387,6 +388,21 @@ public class AdminDivServiceImpl implements AdminDivService {
         Procurement procurement = procurementRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Procurement not found"));
         return procurementMapper.toResponseDto(procurement);
+    }
+
+    @Override
+    public List<ProcurementReportDTO> getAllProcurementForAdmindivReport(Date startDate, Date endDate) {
+        List<Long> subdivIdList = subdivRepository.findByAdmindivId(getAdmindivIdofLoggedUser())
+                .stream()
+                .map(Subdiv::getId)
+                .collect(Collectors.toList());
+        //2. find requests with that sub-div ids
+        List<Long> admindivRequestIds = requestRepository.findAllRequestsOnlyBySubdivIdList(subdivIdList)
+                .stream()
+                .map(Request::getId)
+                .collect(Collectors.toList());
+        //get Procurement from request repository query
+        return procurementRepository.findDivisionProcurementReportData(startDate, endDate,admindivRequestIds);
     }
 
 

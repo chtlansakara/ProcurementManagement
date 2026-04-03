@@ -28,20 +28,12 @@ public class StatusController {
 
     @GetMapping("/status")
     public ResponseEntity<?> getProcurementStatus(){
-        try{
             return ResponseEntity.ok(adminService.getProcurementStatus());
-        }catch(Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
     }
 
     @GetMapping("/status/{id}")
     public ResponseEntity<?> getProcurementStatusById(@PathVariable Long id){
-        try{
             return ResponseEntity.ok(adminService.getProcurementStatusById(id));
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
     }
 
     @PutMapping("/status/{id}")
@@ -55,11 +47,7 @@ public class StatusController {
 
     @DeleteMapping("/status/{id}")
     public ResponseEntity<?> deleteStatus(@PathVariable Long id){
-        try {
             adminService.deleteProcurementStatus(id);
             return ResponseEntity.ok(null);
-        }catch(Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
     }
 }

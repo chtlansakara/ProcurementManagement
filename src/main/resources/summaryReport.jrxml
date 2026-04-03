@@ -111,9 +111,9 @@
                 <text><![CDATA[Summary Report]]></text>
             </element>
             <element kind="staticText" uuid="6602b650-9d90-4df3-b3a1-09e54a87bf7d" x="642" y="43" width="180" height="20" forecolor="#FFFFFF" fontSize="14.0" bold="false" hTextAlign="Right">
-                <text><![CDATA[Created on:]]></text>
+                <text><![CDATA[Generated on:]]></text>
             </element>
-            <element kind="textField" uuid="79dcb035-2e47-4bd1-99a1-e0c73db1a1d5" x="642" y="63" width="179" height="21" forecolor="#FFFFFF" pattern="MMMMM dd, yyyy" hTextAlign="Right">
+            <element kind="textField" uuid="79dcb035-2e47-4bd1-99a1-e0c73db1a1d5" x="642" y="63" width="179" height="21" forecolor="#FFFFFF" pattern="MMMMM dd, yyyy - HH:mm:ss" hTextAlign="Right">
                 <expression><![CDATA[new java.util.Date()]]></expression>
             </element>
         </element>

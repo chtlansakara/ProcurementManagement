@@ -186,6 +186,47 @@ class ProcurementControllerTest {
     }
 
     @Test
+    @DisplayName("Create Procurement - Returns 400 Bad Request")
+    public void createProcurement_ReturnsBadRequest() throws Exception {
+
+        //ARRANGE:
+        //mock service call to return null
+        given(procurementService.createProcurement(ArgumentMatchers.any()))
+                .willReturn(null);
+
+        //ACT:
+        ResultActions response = mockMvc.perform(post("/api/supplies/procurement")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(procurementCreateDto)));
+
+        //ASSERT:
+        response.andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.content()
+                        .string("Procurement couldn't be created."));
+    }
+
+//    @Test
+//    @DisplayName("Create Procurement - Throws Exception & Returns 500 Bad Request")
+//    public void createProcurement_ThrowsException() throws Exception {
+//
+//        //ARRANGE:
+//        //mock service call to return null
+//        given(procurementService.createProcurement(ArgumentMatchers.any()))
+//                .willThrow(new RuntimeException("Unexpected error occurred"));
+//
+//        //ACT:
+//        ResultActions response = mockMvc.perform(post("/api/supplies/procurement")
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .content(objectMapper.writeValueAsString(procurementCreateDto)));
+//
+//        //ASSERT:
+//        response.andExpect(MockMvcResultMatchers.status().isInternalServerError())
+//                .andExpect(MockMvcResultMatchers.content()
+//                        .string("Unexpected error occurred"));
+//
+//    }
+
+    @Test
     @DisplayName("Get All Procurement - Successfully, Returns List of Procurement Response Dto")
     public void getAllProcurement_Success_ReturnsListOfResponseDto() throws Exception {
 

@@ -1,9 +1,14 @@
 package com.cht.procurementManagement.dto.procurement;
 
 import com.cht.procurementManagement.enums.UserRole;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
-
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProcurementStatusUpdateDto {
     private Long id;
     private String comment;

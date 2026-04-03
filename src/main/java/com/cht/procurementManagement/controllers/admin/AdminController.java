@@ -1,17 +1,14 @@
 package com.cht.procurementManagement.controllers.admin;
 
-import com.cht.procurementManagement.dto.SignupRequest;
 import com.cht.procurementManagement.dto.UserDto;
-import com.cht.procurementManagement.entities.Designation;
+import com.cht.procurementManagement.enums.AuditEntityType;
+import com.cht.procurementManagement.services.AuditLog.AuditLogService;
 import com.cht.procurementManagement.services.admin.AdminService;
 import com.cht.procurementManagement.services.auth.AuthService;
-import org.springframework.expression.ExpressionException;
+import com.cht.procurementManagement.services.requests.RequestService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -20,9 +17,13 @@ public class AdminController {
     //injecting service class
     private final AdminService adminService;
     private final AuthService authService;
-    public AdminController(AdminService adminService, AuthService authService) {
+    private final AuditLogService auditLogService;
+    private final RequestService requestService;
+    public AdminController(AdminService adminService, AuthService authService, AuditLogService auditLogService, RequestService requestService) {
         this.adminService = adminService;
         this.authService = authService;
+        this.auditLogService = auditLogService;
+        this.requestService = requestService;
     }
 
 
@@ -68,6 +69,18 @@ public class AdminController {
     }
 
 
+    //delete audit logs for a procurement
+    @DeleteMapping("/procurement/auditLog/{id}")
+    public ResponseEntity<Void> deleteAuditLog(@PathVariable Long id){
+        auditLogService.deleteAuditlogs(AuditEntityType.PROCUREMENT, id);
+        return ResponseEntity.ok(null);
+    }
 
+    //delete requests (force delete in testing)
+    @DeleteMapping("/requests/{id}")
+    public ResponseEntity<Void> deleteRequestByForce(@PathVariable Long id){
+        requestService.deleteRequestById(id);
+        return ResponseEntity.ok(null);
+    }
 
 }

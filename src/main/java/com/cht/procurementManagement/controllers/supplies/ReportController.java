@@ -1,5 +1,6 @@
 package com.cht.procurementManagement.controllers.supplies;
 
+import com.cht.procurementManagement.services.report.ReportService;
 import com.cht.procurementManagement.services.report.SummaryReportService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -15,12 +16,14 @@ import java.util.Date;
 public class ReportController {
 
     private final SummaryReportService summaryReportService;
-    public ReportController(SummaryReportService summaryReportService) {
+    private final ReportService reportService;
+    public ReportController(SummaryReportService summaryReportService, ReportService reportService) {
         this.summaryReportService = summaryReportService;
+        this.reportService = reportService;
     }
 
-    //created in backend
-    @GetMapping("/procurement-report/")
+    //downloaded to frontend
+    @GetMapping("/summary-report/")
     public ResponseEntity<byte[]> generateProcurementSummaryReportWFormat(
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
@@ -42,6 +45,45 @@ public class ReportController {
             }else if(format.equalsIgnoreCase("excel")){
                 contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
                 fileName = "summary_report.xlsx";
+            }else{
+                return ResponseEntity.badRequest()
+                        .body(("Unsupported format: " + format).getBytes());
+            }
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=" +fileName)
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .body(file);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/procurement-report/")
+    public ResponseEntity<byte[]> generateProcurementReportWFormat(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
+            @RequestParam (defaultValue = "pdf") String format) {
+
+        try {
+            byte[] file = reportService.generateProcurementReportWFormat(startDate, endDate, format);
+            //if not successful
+            if(file == null) {
+                return ResponseEntity.badRequest()
+                        .body(("Unsupported format: " + format).getBytes());
+            }
+            //set content type and file name based on format
+            String contentType;
+            String fileName;
+            if (format.equalsIgnoreCase("pdf")) {
+                contentType = "application/pdf";
+                fileName = "procurement_report.pdf";
+            }else if(format.equalsIgnoreCase("excel")){
+                contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                fileName = "procurement_report.xlsx";
             }else{
                 return ResponseEntity.badRequest()
                         .body(("Unsupported format: " + format).getBytes());

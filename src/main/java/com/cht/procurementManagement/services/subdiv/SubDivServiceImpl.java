@@ -1,6 +1,7 @@
 package com.cht.procurementManagement.services.subdiv;
 
 import com.cht.procurementManagement.dto.*;
+import com.cht.procurementManagement.dto.procurement.ProcurementReportDTO;
 import com.cht.procurementManagement.dto.procurement.ProcurementResponseDto;
 import com.cht.procurementManagement.entities.Procurement;
 import com.cht.procurementManagement.entities.Request;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 @Service
@@ -172,9 +174,9 @@ public class SubDivServiceImpl implements SubDivService {
         List<Procurement> subdivProcurement= procurementRepository.findByRequestIdIn(subdivRequestIds);
 
         return procurementMapper.toResponseDtoList(subdivProcurement);
-
-
     }
+
+
 
     //get procurement by id - subdiv
     @Transactional
@@ -199,6 +201,16 @@ public class SubDivServiceImpl implements SubDivService {
         Procurement procurement = procurementRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Procurement not found"));
         return procurementMapper.toResponseDto(procurement);
+    }
+
+    @Override
+    public List<ProcurementReportDTO> getAllProcurementForSubdivReport(Date startDate, Date endDate) {
+        List<Long> subdivRequestIds = requestRepository.findAllRequestsOnlyBySubdivId(getSubdivIdofLoggedUser())
+                .stream()
+                .map(Request::getId)
+                .collect(Collectors.toList());
+        //get Procurement from request repository query
+        return procurementRepository.findDivisionProcurementReportData(startDate, endDate,subdivRequestIds);
     }
 
 //class-methods
