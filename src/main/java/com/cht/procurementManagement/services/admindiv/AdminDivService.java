@@ -1,9 +1,6 @@
 package com.cht.procurementManagement.services.admindiv;
 
-import com.cht.procurementManagement.dto.ApprovalDto;
-import com.cht.procurementManagement.dto.CommentDto;
-import com.cht.procurementManagement.dto.RequestDto;
-import com.cht.procurementManagement.dto.SubdivDto;
+import com.cht.procurementManagement.dto.*;
 import com.cht.procurementManagement.dto.procurement.ProcurementReportDTO;
 import com.cht.procurementManagement.dto.procurement.ProcurementResponseDto;
 import com.cht.procurementManagement.entities.Request;
@@ -64,6 +61,8 @@ public interface AdminDivService {
     ProcurementResponseDto getProcurementByIdForAdmindiv(Long id);
 
     List<ProcurementReportDTO> getAllProcurementForAdmindivReport(Date startDate, Date endDate);
+
+    List<RequestReportDTO> getAdmindivRequestReportData(Date startDate, Date endDate);
 
 
 }

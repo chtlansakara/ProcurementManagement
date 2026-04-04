@@ -73,6 +73,46 @@ public class SubdivUserController {
         }
     }
 
+    //request report for subdiv
+    @GetMapping("/request-report/")
+    public ResponseEntity<byte[]> generateSubdivRequestReportWFormat(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
+            @RequestParam (defaultValue = "pdf") String format) {
+
+        try {
+            byte[] file = reportService.generateSubdivRequestReportWFormat(startDate, endDate, format);
+            //if not successful
+            if(file == null) {
+                return ResponseEntity.badRequest()
+                        .body(("Unsupported format: " + format).getBytes());
+            }
+            //set content type and file name based on format
+            String contentType;
+            String fileName;
+            if (format.equalsIgnoreCase("pdf")) {
+                contentType = "application/pdf";
+                fileName = "subdivision_request_report.pdf";
+            }else if(format.equalsIgnoreCase("excel")){
+                contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                fileName = "subdivision_request_report.xlsx";
+            }else{
+                return ResponseEntity.badRequest()
+                        .body(("Unsupported format: " + format).getBytes());
+            }
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=" +fileName)
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .body(file);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
 
     //get procurement of subdiv
     @GetMapping("/procurement")

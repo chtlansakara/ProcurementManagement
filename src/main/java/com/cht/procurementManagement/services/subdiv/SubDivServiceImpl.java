@@ -204,6 +204,28 @@ public class SubDivServiceImpl implements SubDivService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<RequestReportDTO> getSubdivRequestReportData(Date startDate, Date endDate){
+        Long subdivId = getSubdivIdofLoggedUser();
+        List<RequestReportDTO> reportDTOS = requestRepository.findRequestBySubdivReportData(subdivId, startDate, endDate);
+
+        //finding & adding relevant subdivisions to each request
+        reportDTOS.forEach(dto -> {
+            List<Subdiv> subdivs = requestRepository.findSubdivsByRequestId(dto.getId());
+            if(!subdivs.isEmpty()){
+                String subdivNames = subdivs.stream()
+                        .map(Subdiv::getName)
+                        .collect(Collectors.joining(", "));
+                dto.setSubdivisions(subdivNames);
+            }else{
+                dto.setSubdivisions("N/A");
+            }
+        });
+
+        return reportDTOS;
+    }
+
+    @Override
     public List<ProcurementReportDTO> getAllProcurementForSubdivReport(Date startDate, Date endDate) {
         List<Long> subdivRequestIds = requestRepository.findAllRequestsOnlyBySubdivId(getSubdivIdofLoggedUser())
                 .stream()

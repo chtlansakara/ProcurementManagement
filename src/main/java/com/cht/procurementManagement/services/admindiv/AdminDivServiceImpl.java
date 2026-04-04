@@ -390,6 +390,7 @@ public class AdminDivServiceImpl implements AdminDivService {
         return procurementMapper.toResponseDto(procurement);
     }
 
+    @Transactional
     @Override
     public List<ProcurementReportDTO> getAllProcurementForAdmindivReport(Date startDate, Date endDate) {
         List<Long> subdivIdList = subdivRepository.findByAdmindivId(getAdmindivIdofLoggedUser())
@@ -403,6 +404,32 @@ public class AdminDivServiceImpl implements AdminDivService {
                 .collect(Collectors.toList());
         //get Procurement from request repository query
         return procurementRepository.findDivisionProcurementReportData(startDate, endDate,admindivRequestIds);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RequestReportDTO> getAdmindivRequestReportData(Date startDate, Date endDate){
+        List<Long> subdivIdList = subdivRepository.findByAdmindivId(getAdmindivIdofLoggedUser())
+                .stream()
+                .map(Subdiv::getId)
+                .collect(Collectors.toList());
+
+        List<RequestReportDTO> reportDTOS = requestRepository.findRequestByAdmindivReportData(subdivIdList, startDate, endDate);
+
+        //finding & adding relevant subdivisions to each request
+        reportDTOS.forEach(dto -> {
+            List<Subdiv> subdivs = requestRepository.findSubdivsByRequestId(dto.getId());
+            if(!subdivs.isEmpty()){
+                String subdivNames = subdivs.stream()
+                        .map(Subdiv::getName)
+                        .collect(Collectors.joining(", "));
+                dto.setSubdivisions(subdivNames);
+            }else{
+                dto.setSubdivisions("N/A");
+            }
+        });
+
+        return reportDTOS;
     }
 
 
