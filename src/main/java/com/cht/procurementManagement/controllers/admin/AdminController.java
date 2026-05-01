@@ -7,8 +7,14 @@ import com.cht.procurementManagement.services.admin.AdminService;
 import com.cht.procurementManagement.services.auth.AuthService;
 import com.cht.procurementManagement.services.requests.RequestService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -35,15 +41,42 @@ public class AdminController {
 
     //create user
     @PostMapping("/users")
-    public ResponseEntity<?> createUser(@RequestBody UserDto userDto){
+    public ResponseEntity<?> createUser(@ModelAttribute UserDto userDto){
+        //validate the file input
+        if(userDto.getRecommendationFile() != null && !userDto.getRecommendationFile().isEmpty()){
+            if(userDto.getRecommendationFile().getSize() > 5 * 1024 * 1024){
+                throw new IllegalArgumentException("File size should be less than 5MB");
+            }
+            if(!Objects.equals(userDto.getRecommendationFile().getContentType(), "application/pdf")){
+                throw new IllegalArgumentException("Only PDF files can be uploaded");
+            }
+        }
 
-        UserDto createdUserDto = adminService.createUser(userDto);
+        UserDto createdUserDto = null;
+        try {
+            createdUserDto = adminService.createUser(userDto);
+        } catch (IOException e) {
+            throw new RuntimeException("Error creating new user : IO Exception!");
+        }
+
         //check if created
         if(createdUserDto == null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User couldn't be created");
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUserDto);
     }
+
+
+//    @PostMapping("/users")
+//    public ResponseEntity<?> createUser(@RequestBody UserDto userDto){
+//
+//        UserDto createdUserDto = adminService.createUser(userDto);
+//        //check if created
+//        if(createdUserDto == null){
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User couldn't be created");
+//        }
+//        return ResponseEntity.status(HttpStatus.CREATED).body(createdUserDto);
+//    }
 
     //get user by id
     @GetMapping("/users/{id}")
@@ -52,14 +85,43 @@ public class AdminController {
     }
 
     //update user
-    @PutMapping("/users/{id}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto userDto){
+    @PostMapping("/users/{id}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @ModelAttribute UserDto userDto) throws IOException {
+        //validate the file input
+        if(userDto.getRecommendationFile() != null && !userDto.getRecommendationFile().isEmpty()){
+            if(userDto.getRecommendationFile().getSize() > 5 * 1024 * 1024){
+                throw new IllegalArgumentException("File size should be less than 5MB");
+            }
+            if(!Objects.equals(userDto.getRecommendationFile().getContentType(), "application/pdf")){
+                throw new IllegalArgumentException("Only PDF files can be uploaded");
+            }
+        }
+
         UserDto updatedUserDto = adminService.updateUser(id, userDto);
         if(updatedUserDto == null){
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(updatedUserDto);
     }
+
+    //works for existing file
+//    @PostMapping("/users/{id}")
+//    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @ModelAttribute UserDto userDto) throws IOException {
+//        UserDto updatedUserDto = adminService.updateUser(id, userDto);
+//        if(updatedUserDto == null){
+//            return ResponseEntity.notFound().build();
+//        }
+//        return ResponseEntity.ok(updatedUserDto);
+//    }
+
+//    @PutMapping("/users/{id}")
+//    public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @RequestBody UserDto userDto) throws IOException {
+//        UserDto updatedUserDto = adminService.updateUser(id, userDto);
+//        if(updatedUserDto == null){
+//            return ResponseEntity.notFound().build();
+//        }
+//        return ResponseEntity.ok(updatedUserDto);
+//    }
 
     //delete user
     @DeleteMapping("/users/{id}")

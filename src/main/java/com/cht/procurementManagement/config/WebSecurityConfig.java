@@ -64,11 +64,6 @@ public class WebSecurityConfig {
                                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"))
                 );
         return http.build();
-
-
-//                .csrf(csrf -> csrf.disable())
-//                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-//                .httpBasic(Customizer.withDefaults());
     }
 
 //other required methods

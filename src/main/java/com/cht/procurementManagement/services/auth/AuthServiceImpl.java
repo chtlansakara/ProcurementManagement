@@ -2,6 +2,7 @@ package com.cht.procurementManagement.services.auth;
 
 import com.cht.procurementManagement.dto.SignupRequest;
 import com.cht.procurementManagement.dto.UserDto;
+import com.cht.procurementManagement.entities.Admindiv;
 import com.cht.procurementManagement.entities.Designation;
 import com.cht.procurementManagement.entities.Subdiv;
 import com.cht.procurementManagement.entities.User;
@@ -10,6 +11,8 @@ import com.cht.procurementManagement.repositories.DesignationRepository;
 import com.cht.procurementManagement.repositories.SubdivRepository;
 import com.cht.procurementManagement.repositories.UserRepository;
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityExistsException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -42,7 +45,7 @@ public class AuthServiceImpl implements AuthService{
             User user = new User();
             user.setEmail("admin@test.com");
             user.setName("ADMIN");
-            user.setPassword(new BCryptPasswordEncoder().encode("admin"));
+            user.setPassword(new BCryptPasswordEncoder().encode("Admin7777"));
             user.setUserRole(UserRole.ADMIN);
             //save to db
             userRepository.save(user);
@@ -92,6 +95,45 @@ public class AuthServiceImpl implements AuthService{
         User user = userRepository.findFirstByEmail(email)
                 .orElseThrow( () -> new RuntimeException("Logged user not found."));
         return user.getUserDto();
+    }
+
+    @Override
+    public UserDto updateUserPassword(String currentPassword, String password) {
+        User existingUser = getLoggedUser();
+        String existingPassword = existingUser.getPassword();
+        //check the current password
+        if(!new BCryptPasswordEncoder().matches(currentPassword, existingPassword)){
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        existingUser.setPassword(new BCryptPasswordEncoder().encode(password));
+        //saving to database & return
+        return userRepository.save(existingUser).getUserDto();
+    }
+
+    @Override
+    public UserDto updateUserDetails(UserDto userDto) {
+        User existingUser = getLoggedUser();
+
+        //finding its designation
+        Designation existingDesignation = designationRepository.findById(userDto.getDesignationId())
+                .orElseThrow(() -> new EntityNotFoundException("Designation not found!"));
+        existingUser.setName(userDto.getName());
+        existingUser.setTelephone(userDto.getTelephone());
+        existingUser.setBirthdate(userDto.getBirthdate());
+        //setting related objects
+        existingUser.setDesignation(existingDesignation);
+        //saving to database & return
+        return userRepository.save(existingUser).getUserDto();
+    }
+
+    private User getLoggedUser(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        //get user from database
+        User user = userRepository.findFirstByEmail(email)
+                .orElseThrow( () -> new RuntimeException("Logged user not found."));
+        return user;
     }
 
     private UserRole mapStringToUserRole(String userRole){

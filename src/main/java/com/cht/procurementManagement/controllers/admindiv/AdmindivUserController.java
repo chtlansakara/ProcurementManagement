@@ -36,6 +36,44 @@ public class AdmindivUserController {
         this.procurementService = procurementService;
     }
 
+    //print-request
+    @GetMapping("/print-request/{requestId}")
+    public ResponseEntity<byte[]> generateRequestPrint(@PathVariable Long requestId) {
+        String format = "pdf";
+
+        try {
+            byte[] file = reportService.generatePrintRequestReport(requestId, format);
+            //if not successful
+            if(file == null) {
+                return ResponseEntity.badRequest()
+                        .body(("Unsupported format: " + format).getBytes());
+            }
+            //set content type and file name based on format
+            String contentType;
+            String fileName;
+            if (format.equalsIgnoreCase("pdf")) {
+                contentType = "application/pdf";
+                fileName = "print_request.pdf";
+            }else if(format.equalsIgnoreCase("excel")){
+                contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                fileName = "print_request.xlsx";
+            }else{
+                return ResponseEntity.badRequest()
+                        .body(("Unsupported format: " + format).getBytes());
+            }
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=" +fileName)
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .body(file);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @GetMapping("/procurement-report/")
     public ResponseEntity<byte[]> generateProcurementReportWFormat(
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,

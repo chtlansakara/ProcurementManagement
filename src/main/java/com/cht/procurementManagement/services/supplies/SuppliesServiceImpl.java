@@ -224,7 +224,7 @@ public class SuppliesServiceImpl implements SuppliesService {
         //6.create new approval object through Approval service
         return approvalService.createApproval(approvalDto);
 
-        }
+    }
 
     @Override
     public List<CommentDto> getCommentsByRequestId(Long requestId) {

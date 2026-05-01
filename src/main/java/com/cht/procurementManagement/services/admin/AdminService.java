@@ -4,6 +4,7 @@ import com.cht.procurementManagement.dto.*;
 import com.cht.procurementManagement.entities.Admindiv;
 import com.cht.procurementManagement.entities.Designation;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface AdminService {
@@ -31,10 +32,10 @@ ProcurementSourceDto getSourceById(Long id);
 
 
 // user----------------------------------------
-    UserDto createUser(UserDto userDto);
+    UserDto createUser(UserDto userDto) throws IOException;
     List<UserDto> getUsers();
     UserDto getUserById(Long id);
-    UserDto updateUser(Long id, UserDto userDto);
+    UserDto updateUser(Long id, UserDto userDto) throws IOException;
     void deleteUser(Long id);
 
 // subdiv----------------------------------------

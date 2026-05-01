@@ -10,6 +10,7 @@ import org.springframework.expression.ExpressionException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -253,7 +254,7 @@ public class AdminServiceImpl implements AdminService {
     //Users -----------------------------------------------------------------------------
 
     @Override
-    public UserDto createUser(UserDto userDto) {
+    public UserDto createUser(UserDto userDto) throws IOException {
 
         if(userRepository.findFirstByEmail(userDto.getEmail()).isPresent()){
             throw new EntityExistsException("Email already exists");
@@ -295,6 +296,9 @@ public class AdminServiceImpl implements AdminService {
             user.setPassword( new BCryptPasswordEncoder().encode(userDto.getNic()));
             user.setTelephone(userDto.getTelephone());
             user.setBirthdate(userDto.getBirthdate());
+
+                user.setRecommendation(userDto.getRecommendationFile().getBytes());
+
             //setting objects
             user.setDesignation(existingDesignation);
             user.setAdmindiv(existingAdmindiv);
@@ -336,7 +340,7 @@ public class AdminServiceImpl implements AdminService {
 
 
     @Override
-    public UserDto updateUser(Long id, UserDto userDto) {
+    public UserDto updateUser(Long id, UserDto userDto) throws IOException {
         //find the User object
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found!"));
@@ -372,11 +376,16 @@ public class AdminServiceImpl implements AdminService {
 
         //map user role string to enum
         existingUser.setUserRole(mapStringToUserRole(String.valueOf(userDto.getUserRole())));
+
         existingUser.setName(userDto.getName());
         existingUser.setEmployeeId(userDto.getEmployeeId());
         existingUser.setNic(userDto.getNic());
         existingUser.setTelephone(userDto.getTelephone());
         existingUser.setBirthdate(userDto.getBirthdate());
+        existingUser.setRecommendation(userDto.getRecommendationFile().getBytes());
+//        if(userDto.getRecommendationFile() != null && !userDto.getRecommendationFile().isEmpty()) {
+//            existingUser.setRecommendation(userDto.getRecommendationFile().getBytes());
+//        }
         //setting related objects
         existingUser.setDesignation(existingDesignation);
         existingUser.setSubdiv(existingSubdiv);

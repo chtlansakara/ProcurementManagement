@@ -37,6 +37,10 @@ public class User implements UserDetails {
 
     private String telephone;
 
+    @Lob
+    @Column(columnDefinition = "longblob")
+    private byte[] recommendation;
+
     //user role from enum
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
@@ -53,11 +57,14 @@ public class User implements UserDetails {
     @OnDelete(action =OnDeleteAction.CASCADE)
     @JsonIgnore
     private Subdiv subdiv;
+
     @ManyToOne(fetch = FetchType.EAGER, optional = true)
     @JoinColumn(name="user_admindiv")
     @OnDelete(action =OnDeleteAction.CASCADE)
     @JsonIgnore
     private Admindiv admindiv;
+
+
 
     //method to convert User to UserDto
     public UserDto getUserDto(){
@@ -71,6 +78,9 @@ public class User implements UserDetails {
         userDto.setBirthdate(birthdate);
         userDto.setTelephone(telephone);
         userDto.setUserRole(userRole);
+        userDto.setRecommendation(recommendation != null ? recommendation : new byte[0]);
+
+
         if(subdiv!= null){
             userDto.setSubdivId(subdiv.getId());
             userDto.setSubdivCode(subdiv.getCode());
@@ -126,6 +136,14 @@ public class User implements UserDetails {
     }
 
     //get-set methods
+
+    public byte[] getRecommendation() {
+        return recommendation;
+    }
+
+    public void setRecommendation(byte[] recommendation) {
+        this.recommendation = recommendation;
+    }
 
     public String getTelephone() {
         return telephone;

@@ -1,6 +1,7 @@
 package com.cht.procurementManagement.dto;
 
 import com.cht.procurementManagement.enums.UserRole;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 
@@ -13,6 +14,12 @@ public class UserDto {
     private String nic;
     private String telephone;
     private Date birthdate;
+
+    //to save to the db
+    private byte[] recommendation;
+
+    //to get file from the frontend
+    private MultipartFile recommendationFile;
 
     //user role from enum
     private UserRole userRole;
@@ -32,6 +39,22 @@ public class UserDto {
 
     //get-set methods
 
+
+    public MultipartFile getRecommendationFile() {
+        return recommendationFile;
+    }
+
+    public void setRecommendationFile(MultipartFile recommendationFile) {
+        this.recommendationFile = recommendationFile;
+    }
+
+    public byte[] getRecommendation() {
+        return recommendation;
+    }
+
+    public void setRecommendation(byte[] recommendation) {
+        this.recommendation = recommendation;
+    }
 
     public String getTelephone() {
         return telephone;

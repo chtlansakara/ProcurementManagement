@@ -1,0 +1,861 @@
+<!-- Created with Jaspersoft Studio version 7.0.3.final using JasperReports Library version 7.0.3-41034ca841d452f3305ba55b9042260aaa1ab5dd  -->
+<jasperReport name="SingleRequest" language="java" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4eedbb89-b4f6-4469-9ab6-f642a1688cf7">
+    <property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+    <property name="com.jaspersoft.studio.data.defaultdataadapter" value="Sample DB"/>
+    <style name="Title" forecolor="#FFFFFF" fontName="Times New Roman" fontSize="50.0" bold="false" pdfFontName="Times-Bold"/>
+    <style name="SubTitle" forecolor="#CCCCCC" fontName="Times New Roman" fontSize="18.0" bold="false" pdfFontName="Times-Roman"/>
+    <style name="Column header" forecolor="#666666" fontName="Times New Roman" fontSize="14.0" bold="true"/>
+    <style name="Detail" mode="Transparent" fontName="Times New Roman"/>
+    <style name="Row" mode="Transparent" fontName="Times New Roman" pdfFontName="Times-Roman">
+        <conditionalStyle mode="Opaque" backcolor="#EEEFF0">
+            <conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 0]]></conditionExpression>
+        </conditionalStyle>
+    </style>
+    <style name="Table">
+        <box>
+            <pen lineWidth="1.0" lineColor="#000000"/>
+            <topPen lineWidth="1.0" lineColor="#000000"/>
+            <leftPen lineWidth="1.0" lineColor="#000000"/>
+            <bottomPen lineWidth="1.0" lineColor="#000000"/>
+            <rightPen lineWidth="1.0" lineColor="#000000"/>
+        </box>
+    </style>
+    <style name="Table_TH" mode="Opaque" backcolor="#FFFFFF">
+        <box>
+            <pen lineWidth="0.5" lineColor="#000000"/>
+            <topPen lineWidth="0.5" lineColor="#000000"/>
+            <leftPen lineWidth="0.5" lineColor="#000000"/>
+            <bottomPen lineWidth="0.5" lineColor="#000000"/>
+            <rightPen lineWidth="0.5" lineColor="#000000"/>
+        </box>
+    </style>
+    <style name="Table_CH" mode="Opaque" backcolor="#CACED0">
+        <box>
+            <pen lineWidth="0.5" lineColor="#000000"/>
+            <topPen lineWidth="0.5" lineColor="#000000"/>
+            <leftPen lineWidth="0.5" lineColor="#000000"/>
+            <bottomPen lineWidth="0.5" lineColor="#000000"/>
+            <rightPen lineWidth="0.5" lineColor="#000000"/>
+        </box>
+    </style>
+    <style name="Table_TD" mode="Opaque" backcolor="#FFFFFF">
+        <box>
+            <pen lineWidth="0.5" lineColor="#000000"/>
+            <topPen lineWidth="0.5" lineColor="#000000"/>
+            <leftPen lineWidth="0.5" lineColor="#000000"/>
+            <bottomPen lineWidth="0.5" lineColor="#000000"/>
+            <rightPen lineWidth="0.5" lineColor="#000000"/>
+        </box>
+        <conditionalStyle backcolor="#D8D8D8">
+            <conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 0]]></conditionExpression>
+        </conditionalStyle>
+    </style>
+<!--    <dataset name="tableDataset" uuid="f13e6d36-5148-4ecc-bbe3-3035def80980">-->
+<!--        <query language="sql"><![CDATA[]]></query>-->
+<!--    </dataset>-->
+<!--    <query language="SQL"><![CDATA[select id, name, cost from product where id=1]]></query>-->
+    <parameter name="id" class="java.lang.Long"/>
+    <field name="title" class="java.lang.String">
+
+    </field>
+    <field name="quantity" class="java.lang.String">
+
+    </field>
+    <field name="description" class="java.lang.String">
+
+    </field>
+    <field name="fund" class="java.lang.String">
+
+    </field>
+    <field name="estimation" class="java.lang.String">
+
+    </field>
+    <field name="status" class="java.lang.String">
+
+    </field>
+    <field name="previouslyPurchased" class="java.lang.Boolean">
+
+    </field>
+    <field name="previousPurchaseYear" class="java.lang.Integer">
+
+    </field>
+    <field name="reasonForRequirement" class="java.lang.String">
+
+    </field>
+    <field name="approvedDate" class="java.util.Date">
+
+    </field>
+    <field name="authorizedBy" class="java.lang.String">
+
+    </field>
+    <field name="createdDate" class="java.util.Date">
+
+    </field>
+    <field name="adminDivision" class="java.lang.String">
+
+    </field>
+    <field name="adminDivisionResponsible" class="java.lang.String">
+
+    </field>
+    <field name="subdivNames" class="java.lang.String">
+
+    </field>
+    <field name="createdByName" class="java.lang.String">
+
+    </field>
+    <field name="createdByEmail" class="java.lang.String">
+
+    </field>
+    <field name="createdByDesignation" class="java.lang.String">
+
+    </field>
+
+
+    <field name="admindivApproved" class="java.lang.Boolean">
+
+    </field>
+
+    <field name="admindivAllocatedAmount" class="java.math.BigDecimal">
+
+    </field>
+    <field name="admindivAllocatedFund" class="java.lang.String">
+
+    </field>
+    <field name="admindivAuthorizedBy" class="java.lang.String">
+
+    </field>
+    <field name="admindivApprovedDate" class="java.util.Date">
+
+    </field>
+
+
+    <field name="suppliesApproved" class="java.lang.Boolean">
+
+    </field>
+
+    <field name="suppliesAllocatedAmount" class="java.math.BigDecimal">
+
+    </field>
+    <field name="suppliesAllocatedFund" class="java.lang.String">
+
+    </field>
+    <field name="suppliesAuthorizedBy" class="java.lang.String">
+
+    </field>
+    <field name="suppliesApprovedDate" class="java.util.Date">
+
+    </field>
+
+
+    <title height="72" splitType="Stretch">
+        <element kind="line" uuid="806ce5df-1219-4876-ae0c-ca7405b1f246" x="0" y="65" width="556" height="1" forecolor="#147843">
+            <property name="local_mesure_unitheight" value="pixel"/>
+            <property name="com.jaspersoft.studio.unit.height" value="px"/>
+        </element>
+        <element kind="staticText" uuid="055bfd28-907a-4b65-a65b-0f078887a271" x="0" y="40" width="170" height="19" forecolor="#000000" fontSize="14.0" bold="false" hTextAlign="Left" vTextAlign="Bottom">
+            <text><![CDATA[Procurement Request ID:]]></text>
+        </element>
+        <element kind="staticText" uuid="c7902692-5c6f-4f71-881b-10ba82d54c09" positionType="FixRelativeToBottom" x="455" y="18" width="100" height="20" forecolor="#000000" fontSize="10.0" bold="false" hTextAlign="Right" vTextAlign="Bottom">
+            <text><![CDATA[Generated on:]]></text>
+        </element>
+        <element kind="textField" uuid="35099e91-21c5-4b1d-8c4a-60dda0799cec" x="376" y="40" width="179" height="18" forecolor="#000000" pattern="MMMMM dd, yyyy, HH:mm:ss" hTextAlign="Right" vTextAlign="Bottom">
+            <expression><![CDATA[new java.util.Date()]]></expression>
+        </element>
+        <element kind="image" uuid="be6ccb35-d627-48e0-8b92-527224d7289f" x="0" y="0" width="100" height="36">
+            <expression><![CDATA["LogoSupplies.png"]]></expression>
+        </element>
+        <element kind="textField" uuid="84180e0e-420f-4f2f-a2cc-69a155014307" positionType="Float" x="170" y="39" width="150" height="20" fontName="Arial" fontSize="14.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" hTextAlign="Left" vTextAlign="Bottom" style="Detail">
+            <expression><![CDATA[$P{id}]]></expression>
+            <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="d5c053e1-d5bd-4011-ba2a-06d588e3520e"/>
+        </element>
+        <property name="com.jaspersoft.studio.unit.height" value="px"/>
+    </title>
+    <columnHeader>
+        <property name="com.jaspersoft.studio.unit.height" value="px"/>
+    </columnHeader>
+    <detail>
+        <band height="650" splitType="Stretch">
+            <element kind="staticText" uuid="329624e2-60fb-4688-b4ed-1411342afc14" x="0" y="21" width="555" height="25" fontSize="13.0" bold="false" style="Column header">
+                <text><![CDATA[Basic Information:]]></text>
+                <property name="local_mesure_unitheight" value="pixel"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+            </element>
+            <element kind="line" uuid="26f04019-038b-4983-b9ee-1cf052e3cddd" x="0" y="39" width="556" height="1" forecolor="#808080">
+                <property name="local_mesure_unitheight" value="pixel"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+            </element>
+
+            <element kind="staticText" uuid="37ba4374-82ba-4e6a-a2e0-b322a9731e67" positionType="Float" x="0" y="45" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                <text><![CDATA[TITLE]]></text>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="d5c053e1-d5bd-4011-ba2a-06d588e3520e"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Column header">
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                </box>
+            </element>
+            <element kind="textField" uuid="a356e48a-fabc-434b-b72e-9b179fc8ce7b" positionType="Float" x="180" y="45" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                <expression><![CDATA[$F{title}]]></expression>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="d5c053e1-d5bd-4011-ba2a-06d588e3520e"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Detail">
+                    <pen lineWidth="1.0"/>
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+
+            <element kind="staticText" uuid="fdb5f482-e5e8-45d9-a768-ce0ff983d0c6" positionType="Float" x="0" y="71" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                <text><![CDATA[ADMIN-DIVISION]]></text>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="4ea8a49c-4173-4ace-b7ab-b4c508015129"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Column header">
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                </box>
+            </element>
+            <element kind="textField" uuid="767fd97d-f9ca-4b81-af94-bae63fd83261" positionType="Float" x="180" y="71" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                <expression><![CDATA[$F{adminDivision}]]></expression>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="4ea8a49c-4173-4ace-b7ab-b4c508015129"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Detail">
+                    <pen lineWidth="1.0"/>
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+
+            <element kind="staticText" uuid="3db00828-165a-425f-b07c-84960baa4fa8" positionType="Float" x="0" y="97" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                <text><![CDATA[SUB-DIVISION]]></text>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Column header">
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                </box>
+            </element>
+            <element kind="textField" uuid="0b22ea50-16bf-474b-bf1a-fb5321f1881b" positionType="Float" x="180" y="97" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                <expression><![CDATA[$F{subdivNames}]]></expression>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Detail">
+                    <pen lineWidth="1.0"/>
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+
+            <element kind="staticText" uuid="779bfced-28fb-4e39-b99f-939b4723104a" positionType="Float" x="0" y="123" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                <text><![CDATA[COORDINATOR]]></text>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Column header">
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                </box>
+            </element>
+            <element kind="textField" uuid="6314183a-c235-43a9-bd5e-f3d5e75c6c3d" positionType="Float" x="180" y="123" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                <expression><![CDATA[$F{createdByName}]]></expression>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Detail">
+                    <pen lineWidth="1.0"/>
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+
+            <element kind="staticText" uuid="d39b3307-5194-488e-ba40-b18d2ff7fd55" positionType="Float" x="0" y="149" width="60" height="20" forecolor="#2B2B2B" fontName="Arial" fontSize="10.0" bold="true" vTextAlign="Middle" style="Column header">
+                <text><![CDATA[EMAIL]]></text>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <box leftPadding="4" style="Column header">
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                </box>
+            </element>
+            <element kind="textField" uuid="95b1b36f-0245-4c1c-a033-e84849ff1f29" positionType="Float" x="60" y="149" width="120" height="20" fontName="Arial" fontSize="10.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" italic="true" vTextAlign="Middle" style="Detail">
+                <expression><![CDATA[$F{createdByEmail}]]></expression>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.width" value="px"/>
+                <box leftPadding="4" style="Detail">
+                    <pen lineWidth="1.0"/>
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+            <element kind="staticText" uuid="3215a2c2-37a3-4488-8889-3d5a9554f29e" positionType="Float" x="180" y="149" width="138" height="20" forecolor="#2B2B2B" fontName="Arial" fontSize="10.0" bold="true" vTextAlign="Middle" style="Column header">
+                <text><![CDATA[DESIGNATION]]></text>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <box leftPadding="4" style="Column header">
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                </box>
+            </element>
+            <element kind="textField" uuid="39a39adc-546c-4c57-9ea6-22be55213352" positionType="Float" x="318" y="149" width="237" height="20" fontName="Arial" fontSize="10.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                <expression><![CDATA[$F{createdByDesignation}]]></expression>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.width" value="px"/>
+                <box leftPadding="4" style="Detail">
+                    <pen lineWidth="1.0"/>
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+
+            <element kind="staticText" uuid="11a86553-d6de-4771-822b-0ad836c3f121" positionType="Float" x="0" y="169" width="180" height="20" forecolor="#2B2B2B" fontName="Arial" fontSize="10.0" bold="true" vTextAlign="Middle" style="Column header">
+                <text><![CDATA[CREATED DATE]]></text>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <box leftPadding="4" style="Column header">
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                </box>
+            </element>
+            <element kind="textField" uuid="40702c43-6558-4e56-9a24-9d7be3ded035" positionType="Float" x="180" y="169" width="375" height="20" fontName="Arial" fontSize="10.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail" pattern="yyyy-MM-dd">
+                <expression><![CDATA[$F{createdDate}]]></expression>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <box leftPadding="4" style="Detail">
+                    <pen lineWidth="1.0"/>
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+
+
+
+            <element kind="staticText" uuid="18e9eba3-1357-4561-845d-81768647336d" x="0" y="210" width="555" height="25" forecolor="#666666" fontSize="13.0" bold="false" style="Column header">
+                <text><![CDATA[Details of Authorization:]]></text>
+                <property name="local_mesure_unitheight" value="pixel"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+            </element>
+            <element kind="line" uuid="9cfadfd1-9368-4c37-b948-eac27ccb95c2" x="0" y="228" width="556" height="1" forecolor="#147843">
+                <property name="local_mesure_unitheight" value="pixel"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+            </element>
+
+            <element kind="staticText" uuid="eb1c4555-a206-4024-b2c8-ae267feeb674" positionType="Float" x="0" y="238" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                <text><![CDATA[ESTIMATION (Rs.)	]]></text>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Column header">
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                </box>
+            </element>
+            <element kind="textField" uuid="d23d5c68-84da-4ec4-bbf0-cb1acfdcf96f" positionType="Float" x="180" y="238" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                <expression><![CDATA[$F{estimation}]]></expression>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Detail">
+                    <pen lineWidth="1.0"/>
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+            <element kind="staticText" uuid="f8e10241-fbc4-4699-8f2e-e3bd739ab561" positionType="Float" x="0" y="264" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                <text><![CDATA[UTILIZED FUND]]></text>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Column header">
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                </box>
+            </element>
+            <element kind="textField" uuid="0a110587-1ed9-49d9-8d55-443a3a5872e5" positionType="Float" x="180" y="264" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                <expression><![CDATA[$F{fund}]]></expression>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Detail">
+                    <pen lineWidth="1.0"/>
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+            <element kind="staticText" uuid="4f072ac2-770e-4c08-bf91-d827b8222f80" positionType="Float" x="0" y="300" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                <text><![CDATA[AUTHORIZED BY:	]]></text>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Column header">
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+            <element kind="textField" uuid="633ad0ed-ca77-4c44-9ab9-52e3d6699f4a" positionType="Float" x="180" y="300" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                <expression><![CDATA[$F{authorizedBy}]]></expression>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Detail">
+                    <pen lineWidth="1.0"/>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+
+            <element kind="staticText" uuid="fe4fd6a7-28fb-41fe-82ea-e7d7b809d730" positionType="Float" x="0" y="331" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                <text><![CDATA[APPROVED DATE:]]></text>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Column header">
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+            <element kind="textField" uuid="e5d2334e-f4d8-42eb-9810-ea5fad3bc855" positionType="Float" x="180" y="331" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail" pattern="yyyy-MM-dd">
+                <expression><![CDATA[$F{approvedDate}]]></expression>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Detail">
+                    <pen lineWidth="1.0"/>
+                    <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+
+            <element kind="staticText" uuid="58d319e0-5b3e-4683-a57a-5fb46cb05fb4" x="0" y="381" width="555" height="25" forecolor="#666666" fontSize="13.0" bold="false" style="Column header">
+                <text><![CDATA[Item Description:]]></text>
+                <property name="local_mesure_unitheight" value="pixel"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+            </element>
+            <element kind="line" uuid="5600d337-c4d6-4b46-9224-c140ee635864" x="0" y="399" width="556" height="1" forecolor="#808080">
+                <property name="local_mesure_unitheight" value="pixel"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+            </element>
+
+            <element kind="staticText" uuid="19982d95-e0c5-45be-b256-11a05b9d8d41" positionType="Float" x="0" y="406" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                <text><![CDATA[QUANTITY]]></text>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Column header">
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                </box>
+            </element>
+            <element kind="textField" uuid="0a631a57-dfd0-456e-9d77-03f285c74b0d" positionType="Float" x="180" y="406" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                <expression><![CDATA[$F{quantity}]]></expression>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Detail">
+                    <pen lineWidth="1.0"/>
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+
+            <element kind="staticText" uuid="ff663252-b33e-4703-a8b0-5cd31e7d5eb2" positionType="Float" x="0" y="432" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                <text><![CDATA[PREVIOUSLY PURCHASED?]]></text>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Column header">
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                </box>
+            </element>
+            <element kind="textField" uuid="974648bb-7a80-4390-bbcc-56ea32828a4c" positionType="Float" x="180" y="432" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                <expression><![CDATA[$F{previouslyPurchased}]]></expression>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                <box leftPadding="4" style="Detail">
+                    <pen lineWidth="1.0"/>
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+
+
+            <element kind="frame" uuid="324f79f5-e4f8-4fb9-9b98-6bdc2e0d1441" x="0" y="458" width="555" height="40" positionType="Float" removeLineWhenBlank="true">
+                <printWhenExpression><![CDATA[$F{previouslyPurchased} != null && $F{previouslyPurchased}.equals(Boolean.TRUE)]]></printWhenExpression>
+                <element kind="staticText" uuid="e34bd5fb-1670-48c4-9121-80ebf3d1c8fc" positionType="Float" x="0" y="0" width="180" height="20" forecolor="#2B2B2B" fontName="Arial" fontSize="10.0" bold="true" vTextAlign="Middle" style="Column header">
+                    <text><![CDATA[YEAR OF PREVIOUS PURCHASE]]></text>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Column header">
+                        <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    </box>
+                </element>
+                <element kind="textField" uuid="9b697fde-0ac6-4f81-a760-4879b99da3bd" positionType="Float" x="180" y="0" width="375" height="20" fontName="Arial" fontSize="10.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                    <expression><![CDATA[$F{previousPurchaseYear}]]></expression>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Detail">
+                        <pen lineWidth="1.0"/>
+                        <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                </element>
+                <element kind="staticText" uuid="0d38d3a2-a799-4c28-b10c-de5c075e0ab5" positionType="Float" x="0" y="20" width="180" height="20" forecolor="#2B2B2B" fontName="Arial" fontSize="10.0" bold="true" vTextAlign="Middle" style="Column header">
+                    <text><![CDATA[REASON FOR RE-PURCHASE]]></text>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Column header">
+                        <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    </box>
+                </element>
+                <element kind="textField" uuid="2b5ac341-7299-466e-abcf-8a57f57f26a3" positionType="Float" x="180" y="20" width="375" height="20" fontName="Arial" fontSize="10.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                    <expression><![CDATA[$F{reasonForRequirement}]]></expression>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Detail">
+                        <pen lineWidth="1.0"/>
+                        <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                </element>
+            </element>
+
+
+            <element kind="staticText" uuid="e66c1f24-be0e-4381-b7bd-30b4fec04ebc" positionType="Float" x="0" y="498" width="180" height="108" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Top" style="Column header">
+                <text><![CDATA[DESCRIPTION]]></text>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <box leftPadding="4" topPadding="4" rightPadding="4" bottomPadding="4" style="Column header">
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                </box>
+            </element>
+            <element kind="textField" uuid="9c83d373-8be7-4b2a-a056-ead5c0385eeb" positionType="Float" x="180" y="498" width="375" height="108"  fontName="Arial" fontSize="10.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Top" style="Detail">
+                <expression><![CDATA[$F{description}]]></expression>
+                <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                <box leftPadding="4" topPadding="4" rightPadding="4" bottomPadding="4"  style="Detail">
+                    <pen lineWidth="1.0"/>
+                    <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                </box>
+            </element>
+            <property name="com.jaspersoft.studio.unit.height" value="px"/>
+        </band>
+
+
+
+
+
+
+
+
+        <band height="600">
+            <element kind="frame" uuid="78428a29-1043-4c05-ae35-581348db45b3" x="0" y="21" width="555" height="191"  removeLineWhenBlank="true" positionType="Float">
+                <printWhenExpression><![CDATA[$F{admindivApproved} != null && $F{admindivApproved}.equals(Boolean.TRUE)]]></printWhenExpression>
+
+                <element kind="staticText" uuid="33f0417f-777a-49cf-8f29-2d442b964a64" x="0" y="3" width="555" height="25" forecolor="#666666" fontSize="12.0" bold="false" style="Column header">
+                    <text><![CDATA[Approval by Admin-Division:]]></text>
+                    <property name="local_mesure_unitheight" value="pixel"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                </element>
+                <element kind="line" uuid="fd76e740-ebff-41d8-af95-e76906140fcb" x="0" y="21" width="555" height="1" forecolor="#147843">
+                    <property name="local_mesure_unitheight" value="pixel"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                </element>
+
+                <element kind="staticText" uuid="0426a5ad-9bf2-42de-9b89-297a0ddd044a" positionType="Float" x="0" y="28" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                    <text><![CDATA[ESTIMATION (Rs.)	]]></text>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Column header">
+                        <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    </box>
+                </element>
+                <element kind="textField" uuid="a08562d4-f0bd-4fae-9fe7-9deea74cd028" positionType="Float" x="180" y="28" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail"  pattern="#,##0.00">
+                    <expression><![CDATA[$F{admindivAllocatedAmount}]]></expression>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Detail">
+                        <pen lineWidth="1.0"/>
+                        <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                </element>
+
+                <element kind="staticText" uuid="a2ee3b1c-6fe5-408c-9a74-fc1a260aecee" positionType="Float" x="0" y="54" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                    <text><![CDATA[UTILIZED FUND]]></text>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Column header">
+                        <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    </box>
+                </element>
+                <element kind="textField" uuid="4bc4ef50-6303-4b8b-a58c-11241a646e13" positionType="Float" x="180" y="54" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                    <expression><![CDATA[$F{admindivAllocatedFund}]]></expression>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Detail">
+                        <pen lineWidth="1.0"/>
+                        <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                </element>
+                <element kind="staticText" uuid="488ac128-6cb4-45c5-bd5d-441aeddc1b7a" positionType="Float" x="0" y="80" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                    <text><![CDATA[RESPONSIBLE PERSONNEL]]></text>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Column header">
+                        <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    </box>
+                </element>
+                <element kind="textField" uuid="67e40c6b-015d-41af-94e8-ebb85a48f2c4" positionType="Float" x="180" y="80" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                    <expression><![CDATA[$F{adminDivisionResponsible}]]></expression>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Detail">
+                        <pen lineWidth="1.0"/>
+                        <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                </element>
+
+
+
+
+                <element kind="staticText" uuid="494d8d6c-a361-4ce1-a0d2-631f4d118117" positionType="Float" x="0" y="129" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                    <text><![CDATA[AUTHORIZED BY:	]]></text>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Column header">
+                        <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                </element>
+                <element kind="textField" uuid="87dd8a5a-8a91-4542-99a3-f1072e101f90" positionType="Float" x="180" y="129" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                    <expression><![CDATA[$F{admindivAuthorizedBy}]]></expression>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Detail">
+                        <pen lineWidth="1.0"/>
+                        <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                </element>
+
+                <element kind="staticText" uuid="d50feae6-432f-4f4a-bb27-fbf0456cfd9b" positionType="Float" x="0" y="160" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                    <text><![CDATA[APPROVED DATE:]]></text>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Column header">
+                        <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                </element>
+                <element kind="textField" uuid="024bb657-2258-4c17-a868-0b76f1ace66f" positionType="Float" x="180" y="160" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail" pattern="yyyy-MM-dd">
+                    <expression><![CDATA[$F{admindivApprovedDate}]]></expression>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Detail">
+                        <pen lineWidth="1.0"/>
+                        <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                </element>
+
+            </element>
+
+
+
+
+
+
+
+
+            <element kind="frame" uuid="221c6a1c-3da3-442b-8042-d42975b938c0" x="0" y="231" width="555" height="191" positionType="Float" removeLineWhenBlank="true">
+                <printWhenExpression><![CDATA[$F{suppliesApproved} != null && $F{suppliesApproved}.equals(Boolean.TRUE)]]></printWhenExpression>
+                <property name="com.jaspersoft.studio.unit.x" value="px"/>
+
+                <element kind="staticText" uuid="041eb74e-c2e9-4276-bb65-079c6d095d63" x="0" y="3" width="555" height="25" forecolor="#666666" fontSize="12.0" bold="false" style="Column header">
+                    <text><![CDATA[Approval by Supplies-Division:]]></text>
+                    <property name="local_mesure_unitheight" value="pixel"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                </element>
+                <element kind="line" uuid="1b01518d-ef5e-49a1-a0a3-baaf68b3f3f7" x="0" y="21" width="555" height="1" forecolor="#147843">
+                    <property name="local_mesure_unitheight" value="pixel"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                </element>
+
+
+                <element kind="staticText" uuid="bc1bd355-6e33-44d6-a7e5-fcb30a417c23" positionType="Float" x="0" y="28" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                    <text><![CDATA[ESTIMATION (Rs.)	]]></text>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Column header">
+                        <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    </box>
+                </element>
+                <element kind="textField" uuid="bcebc001-eb2a-4e2f-aaef-2e1415ad497a" positionType="Float" x="180" y="28" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail"  pattern="#,##0.00">
+                    <expression><![CDATA[$F{suppliesAllocatedAmount}]]></expression>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Detail">
+                        <pen lineWidth="1.0"/>
+                        <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                </element>
+
+                <element kind="staticText" uuid="a0e06210-54e5-431c-a53c-31e0020ca7fe" positionType="Float" x="0" y="54" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                    <text><![CDATA[UTILIZED FUND]]></text>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Column header">
+                        <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                        <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#666666"/>
+                    </box>
+                </element>
+                <element kind="textField" uuid="ced4a07d-2de0-4648-9baa-f5e016c67a0b" positionType="Float" x="180" y="54" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                    <expression><![CDATA[$F{suppliesAllocatedFund}]]></expression>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Detail">
+                        <pen lineWidth="1.0"/>
+                        <topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                </element>
+
+
+                <element kind="staticText" uuid="070411f1-9dd9-4b24-b639-5a891d267622" positionType="Float" x="0" y="96" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                    <text><![CDATA[AUTHORIZED BY:	]]></text>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Column header">
+                        <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                </element>
+                <element kind="textField" uuid="8da63f94-3270-49e8-a78b-989117731143" positionType="Float" x="180" y="96" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail">
+                    <expression><![CDATA[$F{suppliesAuthorizedBy}]]></expression>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Detail">
+                        <pen lineWidth="1.0"/>
+                        <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                </element>
+
+                <element kind="staticText" uuid="95120600-009c-47c0-a0c9-20565ad5adab" positionType="Float" x="0" y="127" width="180" height="26" forecolor="#2B2B2B" fontName="Arial" fontSize="11.0" bold="true" vTextAlign="Middle" style="Column header">
+                    <text><![CDATA[APPROVED DATE:]]></text>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Column header">
+                        <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                </element>
+                <element kind="textField" uuid="fad4646e-ca6d-42b1-b500-d6373b90d7ac" positionType="Float" x="180" y="127" width="375" height="26" fontName="Arial" fontSize="11.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false" vTextAlign="Middle" style="Detail" pattern="yyyy-MM-dd">
+                    <expression><![CDATA[$F{suppliesApprovedDate}]]></expression>
+                    <property name="com.jaspersoft.studio.spreadsheet.connectionID" value="253eae2a-3382-4712-9f53-8e5668c512b7"/>
+                    <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    <box leftPadding="4" style="Detail">
+                        <pen lineWidth="1.0"/>
+                        <topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                        <rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+                    </box>
+                </element>
+                <property name="com.jaspersoft.studio.unit.height" value="px"/>
+            </element>
+        </band>
+    </detail>
+    <lastPageFooter>
+        <property name="com.jaspersoft.studio.unit.height" value="px"/>
+    </lastPageFooter>
+</jasperReport>

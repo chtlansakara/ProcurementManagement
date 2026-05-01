@@ -1,6 +1,7 @@
 package com.cht.procurementManagement.services.report;
 
 import com.cht.procurementManagement.dto.RequestReportDTO;
+import com.cht.procurementManagement.dto.SingleRequestReportDTO;
 import com.cht.procurementManagement.dto.procurement.ProcurementReportDTO;
 import com.cht.procurementManagement.entities.User;
 import com.cht.procurementManagement.repositories.ProcurementRepository;
@@ -20,10 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class ReportService {
@@ -231,6 +229,67 @@ public class ReportService {
         parameters.put("START_DATE", startDate);
         parameters.put("END_DATE", endDate);
 
+        //6. Fill Report
+        JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
+
+        //7. Export to pdf bytes and return
+        if(fileFormat.equalsIgnoreCase("pdf")) {
+            //export tp bytes
+            return JasperExportManager.exportReportToPdf(jasperPrint);
+        }
+
+        if(fileFormat.equalsIgnoreCase("excel")) {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+            JRXlsxExporter exporter = new JRXlsxExporter();
+            exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(outputStream));
+
+            SimpleXlsxReportConfiguration config = new SimpleXlsxReportConfiguration();
+            config.setOnePagePerSheet(false);
+            config.setDetectCellType(true);
+            config.setCollapseRowSpan(false);
+            config.setIgnoreGraphics(false);
+            exporter.setConfiguration(config);
+
+            exporter.exportReport();
+            return outputStream.toByteArray();
+        }
+
+        return null;
+
+    }
+
+
+
+    //report for requests
+    public byte[] generatePrintRequestReport(Long requestId, String fileFormat) throws JRException {
+
+
+        //1. get data from db
+       SingleRequestReportDTO reportData = requestReportService.getSingleRequestReportData(requestId);
+
+        if(reportData == null){
+            throw new RuntimeException("No request data found!");
+        }
+
+        //2. Load the .jrxml file from resources
+        String reportPath = "/singleRequest.jrxml";
+        InputStream reportStream = getClass().getResourceAsStream(reportPath);
+        if(reportStream == null){
+            throw new RuntimeException("Report file not found at " +reportPath);
+        }
+
+        //3.compile the report
+        JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
+
+        //4. Convert data to datasource
+        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(List.of(reportData));
+
+        //5. set parameters
+        Map<String,Object> parameters = new HashMap<>();
+        parameters.put("createdOn", new Date() );
+        parameters.put("id", requestId);
         //6. Fill Report
         JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
 
