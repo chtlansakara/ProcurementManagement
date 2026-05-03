@@ -11,7 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -266,15 +268,25 @@ public class AdmindivUserController {
 
 
     //create request by admin div
-    @PostMapping("/requests")
-    public ResponseEntity<?> createRequestByAdmindiv(@RequestBody RequestDto requestDto){
+    @PostMapping(value = "/requests", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> createRequestByAdmindiv(@RequestPart("request") RequestDto requestDto,
+                                                     @RequestPart(value ="file", required = false) MultipartFile file){
         //save
-        RequestDto createdRequestDto = adminDivService.createRequestByAdmindiv(requestDto);
+        RequestDto createdRequestDto = adminDivService.createRequestByAdmindiv(requestDto, file);
         if(createdRequestDto==null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request couldn't be created");
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRequestDto);
     }
+//    @PostMapping("/requests")
+//    public ResponseEntity<?> createRequestByAdmindiv(@RequestBody RequestDto requestDto){
+//        //save
+//        RequestDto createdRequestDto = adminDivService.createRequestByAdmindiv(requestDto);
+//        if(createdRequestDto==null){
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request couldn't be created");
+//        }
+//        return ResponseEntity.status(HttpStatus.CREATED).body(createdRequestDto);
+//    }
 
 
     //reject the request
@@ -288,14 +300,22 @@ public class AdmindivUserController {
     }
 
     //approve the request
-    @PostMapping("/requests/approve/{id}")
-    public ResponseEntity<?> approveRequestBySupplies(@PathVariable Long id, @RequestBody ApprovalDto approvalDto){
-        ApprovalDto createdApprovalDto =adminDivService.approveRequestByAdmindiv(id, approvalDto);
+    @PostMapping(value = "/requests/approve/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> approveRequestBySupplies(@PathVariable Long id,  @RequestPart("approval") ApprovalDto approvalDto,
+                                                      @RequestPart(value ="file", required = false) MultipartFile file){
+        ApprovalDto createdApprovalDto =adminDivService.approveRequestByAdmindiv(id, approvalDto, file);
         if(createdApprovalDto == null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Approval couldn't be created");
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(createdApprovalDto);
     }
+//    public ResponseEntity<?> approveRequestBySupplies(@PathVariable Long id, @RequestBody ApprovalDto approvalDto){
+//        ApprovalDto createdApprovalDto =adminDivService.approveRequestByAdmindiv(id, approvalDto);
+//        if(createdApprovalDto == null){
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Approval couldn't be created");
+//        }
+//        return ResponseEntity.status(HttpStatus.CREATED).body(createdApprovalDto);
+//    }
 
 
     //get subdiv list

@@ -19,12 +19,12 @@ public interface SuppliesService {
 
     RequestDto getRequestById(Long requestId);
 
-    RequestDto createRequestBySupplies(RequestDto requestDto, MultipartFile file) throws IOException;
+    RequestDto createRequestBySupplies(RequestDto requestDto, MultipartFile file);
 
     RequestDto updateRequest(Long requestId, RequestDto requestDto);
 
     //update request attachment
-    PDFAttachment uploadRequestAttachment(MultipartFile file, Long requestId) throws IOException;
+    PDFAttachment uploadRequestAttachment(MultipartFile file, Long requestId);
 
     //delete request attachment
     void deleteRequestAttachment(Long fileId) throws IOException;
@@ -35,7 +35,7 @@ public interface SuppliesService {
     CommentDto rejectRequestBySupplies(Long requestId, CommentDto commentDto);
 
     //approve a request form an admin div - create approval & change request status
-    ApprovalDto approveRequestBySupplies(Long requestId, ApprovalDto approvalDto);
+    ApprovalDto approveRequestBySupplies(Long requestId, ApprovalDto approvalDto, MultipartFile file);
 
     List<CommentDto> getCommentsByRequestId(Long requestId);
 

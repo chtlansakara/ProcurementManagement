@@ -4,20 +4,21 @@ import com.cht.procurementManagement.dto.*;
 import com.cht.procurementManagement.dto.procurement.ProcurementReportDTO;
 import com.cht.procurementManagement.dto.procurement.ProcurementResponseDto;
 import com.cht.procurementManagement.entities.*;
-import com.cht.procurementManagement.enums.ApprovalType;
-import com.cht.procurementManagement.enums.RequestStatus;
-import com.cht.procurementManagement.enums.ReviewType;
-import com.cht.procurementManagement.enums.UserRole;
+import com.cht.procurementManagement.enums.*;
 import com.cht.procurementManagement.mappers.ProcurementMapper;
 import com.cht.procurementManagement.repositories.*;
 import com.cht.procurementManagement.services.Approval.ApprovalService;
 import com.cht.procurementManagement.services.Comment.CommentService;
+import com.cht.procurementManagement.services.attachment.AttachmentService;
 import com.cht.procurementManagement.services.auth.AuthService;
 import com.cht.procurementManagement.services.requests.RequestService;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,7 @@ public class AdminDivServiceImpl implements AdminDivService {
 
     private final CommentService commentService;
     private final ApprovalService approvalService;
+    private final AttachmentService attachmentService;
 
     private final CommentRepository commentRepository;
     private final ApprovalRepository approvalRepository;
@@ -48,6 +50,7 @@ public class AdminDivServiceImpl implements AdminDivService {
                                RequestService requestService,
                                CommentService commentService,
                                ApprovalService approvalService,
+                               AttachmentService attachmentService,
                                CommentRepository commentRepository,
                                ApprovalRepository approvalRepository,
                                ProcurementMapper procurementMapper,
@@ -59,6 +62,7 @@ public class AdminDivServiceImpl implements AdminDivService {
         this.requestService = requestService;
         this.commentService = commentService;
         this.approvalService = approvalService;
+        this.attachmentService = attachmentService;
         this.commentRepository = commentRepository;
         this.approvalRepository = approvalRepository;
         this.procurementMapper = procurementMapper;
@@ -82,7 +86,7 @@ public class AdminDivServiceImpl implements AdminDivService {
 
 
     //get only requests belong to admin div
-   @Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     @Override
     public List<RequestDto> getAllRequestsOnlyByAdmindivId() {
         //1. finding id list of the admin division's sub divs
@@ -117,7 +121,7 @@ public class AdminDivServiceImpl implements AdminDivService {
     //get only - pending requests
     @Transactional(readOnly = true)
     @Override
-    public List<RequestDto> getRequestsPendingAdmindivApproval(){
+    public List<RequestDto> getRequestsPendingAdmindivApproval() {
         //finding the admin div's subdiv list
         List<Long> subdivIdList = subdivRepository.findByAdmindivId(getAdmindivIdofLoggedUser())
                 .stream()
@@ -167,25 +171,113 @@ public class AdminDivServiceImpl implements AdminDivService {
     }
 
 
-
     //get request by id
     @Override
     public RequestDto getRequestByRequestId(Long requestId) {
         //find if the request's sub div list only has admin div's sub divs
-        RequestDto retrieveRequestDto =  requestService.getRequestById(requestId);
+        RequestDto retrieveRequestDto = requestService.getRequestById(requestId);
 
         //check if sub div id list has other admin division's
-        if(!checkforCorrectSubdivsForAdmindiv(retrieveRequestDto.getSubdivIdList())){
+        if (!checkforCorrectSubdivsForAdmindiv(retrieveRequestDto.getSubdivIdList())) {
             throw new RuntimeException("Include sub-divisions don't belong to the admin division.");
         }
 
         return retrieveRequestDto;
     }
 
+    //get request attachment by request id
+    @Override
+    public Optional<PDFAttachment> getAdmindivRequestAttachment(Long requestId) {
+
+        //validate as admindiv request first
+        Request existingRequest = validateAsAdmindivRequest(requestId);
+
+        //find the attachment if exists
+        return attachmentService.getAttachment(requestId, EntityType.REQUEST);
+    }
+
+    //get approval attachment by approval id
+    @Override
+    public Optional<PDFAttachment> getAdmindivApprovalAttachment(Long approvalId) {
+        //find the request of the approval
+
+        Optional<Approval> existingApprovalDto = approvalRepository.findById(approvalId);
+
+        if (existingApprovalDto.isPresent()) {
+            Long requestId = existingApprovalDto.get().getRequest().getId();
+
+            //validate as admindiv request first
+            Request existingRequest = validateAsAdmindivRequest(requestId);
+
+            //find the attachment if exists
+            return attachmentService.getAttachment(approvalId, EntityType.APPROVAL);
+        }
+
+        return Optional.empty();
+    }
+
+    @Override
+    public Resource downloadAdmindivAttachment(Long fileId){
+        PDFAttachment existingAttachment = attachmentService.getAttachmentById(fileId);
+        Long requestId = null;
+        //check for relevance
+        if(existingAttachment.getReferenceType().equals(EntityType.PROCUREMENT)){
+            throw new RuntimeException("Access denied for procurement documents.");
+
+        }else if(existingAttachment.getReferenceType().equals(EntityType.APPROVAL)){
+
+            Approval existingApproval = approvalRepository.findById(existingAttachment.getReferenceId())
+                    .orElseThrow(() -> new RuntimeException("Approval not found."));
+            requestId = existingApproval.getRequest().getId();
+            //validate for admin div
+            validateAsAdmindivRequest(requestId);
+        }else{
+            //for Entity Type REQUEST
+            requestId = existingAttachment.getReferenceId();
+            //validate for admin div
+            validateAsAdmindivRequest(requestId);
+        }
+
+        //return attachment
+        try {
+            return attachmentService.getFileResource(fileId);
+        } catch (IOException e) {
+            throw new RuntimeException("File not found");
+        }
+    }
+
+    @Override
+    public PDFAttachment uploadRequestAttachment(MultipartFile file, Long requestId){
+        validateAsAdmindivRequest(requestId);
+
+        //remove if there is an existing attachment for the request
+        attachmentService.getAttachment(requestId, EntityType.REQUEST).ifPresent(existing ->{
+            throw new RuntimeException("Delete existing file attachment first");
+        });
+
+        return attachmentService.uploadFile(file, "Request approval", requestId,  EntityType.REQUEST);
+
+    }
+
+    @Override
+    public void deleteRequestAttachment(Long fileId){
+        //find requestId
+        PDFAttachment attachment = attachmentService.getAttachmentById(fileId);
+        EntityType type = attachment.getReferenceType();
+        Long referenceId = attachment.getReferenceId();
+        if(type.equals(EntityType.REQUEST)) {
+            validateAsAdmindivRequest(referenceId);
+            attachmentService.deleteAttachment(fileId);
+        }else{
+            throw new RuntimeException("File is not a request attachment");
+        }
+    }
+
+
 
     @Transactional
     @Override
-    public RequestDto createRequestByAdmindiv(RequestDto requestDto) {
+    public RequestDto createRequestByAdmindiv(RequestDto requestDto, MultipartFile file) {
 
         //1. checking if the subdiv list is empty
         if(requestDto.getSubdivIdList() != null && !requestDto.getSubdivIdList().isEmpty()){
@@ -201,7 +293,14 @@ public class AdminDivServiceImpl implements AdminDivService {
             requestDto.setStatus(RequestStatus.PENDING_SUPPLIES_APPROVAL);
 
             //4. create request through request service - set status & sub div list here
-            return requestService.createRequest(requestDto);
+            RequestDto createdRequestDto = requestService.createRequest(requestDto);
+
+            //5. save the file
+            if(!file.isEmpty()) {
+                attachmentService.uploadFile(file, "Request approval", createdRequestDto.getId(), EntityType.REQUEST);
+            }
+
+            return createdRequestDto;
 
         }else{
             throw new EntityNotFoundException("Sub-division/s are empty!");
@@ -236,9 +335,12 @@ public class AdminDivServiceImpl implements AdminDivService {
 
         //1. check for authorization
         Request existingRequest = validateRequestForUpdateDeleteForAdmindivUser(requestId);
-        //2. then delete using Request service
-        requestService.deleteRequest(existingRequest);
 
+        //2. delete related attachment
+        attachmentService.deleteAllAttachmentsOfAnEntity(requestId, EntityType.REQUEST);
+
+        //3. then delete using Request service
+        requestService.deleteRequest(existingRequest);
     }
 
 //related to comment or approve requests
@@ -286,7 +388,7 @@ public class AdminDivServiceImpl implements AdminDivService {
 
     //create approval - create approval & change request status
     @Override
-    public ApprovalDto approveRequestByAdmindiv(Long requestId, ApprovalDto approvalDto) {
+    public ApprovalDto approveRequestByAdmindiv(Long requestId, ApprovalDto approvalDto, MultipartFile file) {
         //1. check if request has only sub-divs of admin div
         Request existingRequest = validateAsAdmindivRequest(requestId);
 
@@ -316,7 +418,15 @@ public class AdminDivServiceImpl implements AdminDivService {
             approvalDto.setRequestId(requestId);
 
             //7.create new approval object through Approval service
-            return approvalService.createApproval(approvalDto);
+            ApprovalDto savedApprovalDto = approvalService.createApproval(approvalDto);
+
+            //8. save the file
+            if(!file.isEmpty()) {
+                attachmentService.uploadFile(file, "Approval Document", savedApprovalDto.getId(), EntityType.APPROVAL);
+            }
+
+            return savedApprovalDto;
+
         }else{
             throw new RuntimeException("Request is not due for review");
         }

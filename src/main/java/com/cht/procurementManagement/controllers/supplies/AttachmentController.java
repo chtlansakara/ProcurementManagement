@@ -49,19 +49,18 @@ public class AttachmentController {
         }
     }
 
-    //for request
+    //for request file update
     @PostMapping("/request-upload/{id}")
     public ResponseEntity<?> uploadRequestAttachment(@PathVariable Long id, @RequestParam("file")MultipartFile file){
         try{
             PDFAttachment savedAttachment = suppliesService.uploadRequestAttachment(file, id);
             return ResponseEntity.ok().body(savedAttachment);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }catch(IllegalArgumentException e){
+        } catch(IllegalArgumentException e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
 
+    //for request file delete
     @DeleteMapping("/request-attachment/{fileId}")
     public ResponseEntity<?> deleteRequestAttachment(@PathVariable Long fileId){
         try{
@@ -73,19 +72,19 @@ public class AttachmentController {
     }
 
 
-    //for approval
+    //for approval upload (update) - not used
     @PostMapping("/approval-upload/{id}")
     public ResponseEntity<?> uploadApprovalAttachment(@PathVariable Long id,  @RequestParam ("file")MultipartFile file){
         try{
             PDFAttachment savedAttachment = attachmentService.uploadFile(file, "Approval", id,  EntityType.APPROVAL);
             return ResponseEntity.ok().body(savedAttachment);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }catch(IllegalArgumentException e){
+        } catch(IllegalArgumentException e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
 
+
+    //download resources
     @GetMapping("/procurement-download/{fileId}")
     public ResponseEntity<Resource> downloadProcurementAttachment(@PathVariable Long fileId){
         try{
@@ -101,6 +100,7 @@ public class AttachmentController {
         }
     }
 
+    //delete selected procurement file
     @DeleteMapping("/procurement-attachment/{fileId}")
     public ResponseEntity<?> deleteProcurementAttachment(@PathVariable Long fileId){
         try{
@@ -112,46 +112,31 @@ public class AttachmentController {
     }
 
 
-    //get all procurement attachments
+    //get all procurement attachments by procurement id
     @GetMapping("/procurement-attachments/{id}")
     public ResponseEntity<?> getAllProcurementAttachment(@PathVariable Long id){
-        try {
-            List<PDFAttachment> attachmentsList = attachmentService.getAllAttachmentsByProcurement(id);
-            return ResponseEntity.ok().body(attachmentsList);
+        List<PDFAttachment> attachmentsList = attachmentService.getAllAttachmentsByProcurement(id);
+        return ResponseEntity.ok().body(attachmentsList);
 
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
     }
 
-    //get request attachment
+    //get request attachment by request id
     @GetMapping("/request-attachment/{id}")
     public ResponseEntity<?> getRequestAttachment(@PathVariable Long id){
-
-        try {
             Optional<PDFAttachment> attachment = attachmentService.getAttachment(id, EntityType.REQUEST);
             if(attachment.isPresent()){
                 return ResponseEntity.ok().body(attachment);
             }
             return ResponseEntity.noContent().build();
-
-        } catch (FileNotFoundException e) {
-            return ResponseEntity.noContent().build();
-        }
     }
 
-    //get approval attachment
+    //get approval attachment by approval id
     @GetMapping("/approval-attachment/{id}")
     public ResponseEntity<?> getApprovalAttachment(@PathVariable Long id){
-        try {
             Optional<PDFAttachment> attachment = attachmentService.getAttachment(id, EntityType.APPROVAL);
             if(attachment.isPresent()){
                 return ResponseEntity.ok().body(attachment);
             }
             return ResponseEntity.noContent().build();
-
-        } catch (FileNotFoundException e) {
-            return ResponseEntity.noContent().build();
-        }
     }
 }

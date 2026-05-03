@@ -80,12 +80,8 @@ public class SuppliesController {
     @PostMapping(value = "/requests", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createRequest(@RequestPart("request") RequestDto requestDto,
                                            @RequestPart(value ="file", required = false) MultipartFile file){
-        RequestDto createdRequestDto = null;
-        try {
-            createdRequestDto = suppliesService.createRequestBySupplies(requestDto , file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        RequestDto createdRequestDto = suppliesService.createRequestBySupplies(requestDto , file);
+
         if(createdRequestDto == null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request couldn't be created.");
         }
@@ -111,14 +107,24 @@ public class SuppliesController {
     }
 
     //approve requests
-    @PostMapping("/requests/approve/{id}")
-    public ResponseEntity<?> approveRequestBySupplies(@PathVariable Long id, @RequestBody ApprovalDto approvalDto){
-        ApprovalDto createdApprovalDto = suppliesService.approveRequestBySupplies(id, approvalDto);
+    @PostMapping(value = "/requests/approve/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> approveRequestBySupplies(@PathVariable Long id,  @RequestPart("approval") ApprovalDto approvalDto,
+                                           @RequestPart(value ="file", required = false) MultipartFile file){
+        ApprovalDto createdApprovalDto =  suppliesService.approveRequestBySupplies(id, approvalDto , file);
         if(createdApprovalDto == null){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Approval couldn't be created");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Approval couldn't be created.");
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(createdApprovalDto);
     }
+    //without file attachment
+//    @PostMapping("/requests/approve/{id}")
+//    public ResponseEntity<?> approveRequestBySupplies(@PathVariable Long id, @RequestBody ApprovalDto approvalDto){
+//        ApprovalDto createdApprovalDto = suppliesService.approveRequestBySupplies(id, approvalDto);
+//        if(createdApprovalDto == null){
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Approval couldn't be created");
+//        }
+//        return ResponseEntity.status(HttpStatus.CREATED).body(createdApprovalDto);
+//    }
 
     @PutMapping("/requests/{id}")
     public ResponseEntity<?> updateRequest(@PathVariable Long id, @RequestBody RequestDto requestDto){

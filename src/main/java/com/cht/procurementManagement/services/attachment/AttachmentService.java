@@ -33,7 +33,7 @@ public class AttachmentService {
     }
 
     //save file
-    public PDFAttachment uploadFile(MultipartFile file, String name, Long referenceId, EntityType referenceType) throws IOException {
+    public PDFAttachment uploadFile(MultipartFile file, String name, Long referenceId, EntityType referenceType) {
         //validate the file
         validateFile(file, referenceType, referenceId);
 
@@ -41,6 +41,8 @@ public class AttachmentService {
         String storagePath;
         try(InputStream inputStream = file.getInputStream()){
             storagePath = attachmentStorageService.storeFile(inputStream, file.getOriginalFilename());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         //create new db object
@@ -97,13 +99,13 @@ public class AttachmentService {
     }
 
     //method to get all file details for a procurement
-    public List<PDFAttachment> getAllAttachmentsByProcurement(Long procurementId) throws IOException {
+    public List<PDFAttachment> getAllAttachmentsByProcurement(Long procurementId){
         return pdfAttachmentRepository
                 .findAllByReferenceIdAndReferenceType(procurementId, EntityType.PROCUREMENT);
     }
 
     //method to delete all files related to a procurement, request or an approval
-    public void deleteAllAttachmentsOfAnEntity(Long referenceId, EntityType referenceType ) throws IOException {
+    public void deleteAllAttachmentsOfAnEntity(Long referenceId, EntityType referenceType ) {
         List<Long> attachmentIds = pdfAttachmentRepository
                 .findAllByReferenceIdAndReferenceType(referenceId, referenceType)
                 .stream()
@@ -117,14 +119,14 @@ public class AttachmentService {
 
 
     //method to retrieve file object from db by attachment id
-    public PDFAttachment getAttachmentById(Long fileId) throws IOException{
+    public PDFAttachment getAttachmentById(Long fileId){
         return pdfAttachmentRepository.findById(fileId)
-                .orElseThrow( () -> new FileNotFoundException("File not found"));
+                .orElseThrow( () -> new RuntimeException("File not found"));
     }
 
 
     //to get attachment info for request or approval by its id
-    public Optional<PDFAttachment> getAttachment(Long id, EntityType entityType) throws FileNotFoundException {
+    public Optional<PDFAttachment> getAttachment(Long id, EntityType entityType) {
         if(entityType.equals(EntityType.REQUEST)){
         return pdfAttachmentRepository.findFirstByReferenceIdAndReferenceType(id, EntityType.REQUEST);
 
@@ -137,11 +139,15 @@ public class AttachmentService {
     }
 
     //to delete attachment by attachment id
-    public void deleteAttachment(Long fileId) throws IOException {
+    public void deleteAttachment(Long fileId) {
         //retrieve attachment object from db - using class method
         PDFAttachment existing = getAttachmentById(fileId);
         //delete from file directory
-        attachmentStorageService.deleteFile(existing.getStoredPath());
+        try {
+            attachmentStorageService.deleteFile(existing.getStoredPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         //delete from db
         pdfAttachmentRepository.deleteById(fileId);
     }

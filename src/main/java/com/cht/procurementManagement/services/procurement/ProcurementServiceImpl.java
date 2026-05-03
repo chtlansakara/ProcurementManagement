@@ -585,11 +585,7 @@ public class ProcurementServiceImpl implements ProcurementService{
         notificationService.deleteNotifications(AuditEntityType.PROCUREMENT, id);
 
         //delete related procurement attachments
-        try {
-            attachmentService.deleteAllAttachmentsOfAnEntity(id, EntityType.PROCUREMENT);
-        } catch (IOException e) {
-            throw new RuntimeException("Attachment Files are not found");
-        }
+        attachmentService.deleteAllAttachmentsOfAnEntity(id, EntityType.PROCUREMENT);
 
         //delete procurement
         procurementRepository.deleteById(id);

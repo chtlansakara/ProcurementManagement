@@ -9,4 +9,6 @@ public interface ApprovalService {
     ApprovalDto createApproval(ApprovalDto approvalDto);
 
     List<ApprovalDto> getApprovalsByRequestId(Long requestId);
+
+
 }

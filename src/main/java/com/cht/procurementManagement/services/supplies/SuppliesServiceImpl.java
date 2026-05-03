@@ -1,10 +1,7 @@
 package com.cht.procurementManagement.services.supplies;
 
 import com.cht.procurementManagement.dto.*;
-import com.cht.procurementManagement.entities.Admindiv;
-import com.cht.procurementManagement.entities.PDFAttachment;
-import com.cht.procurementManagement.entities.Request;
-import com.cht.procurementManagement.entities.Subdiv;
+import com.cht.procurementManagement.entities.*;
 import com.cht.procurementManagement.enums.*;
 import com.cht.procurementManagement.repositories.AdmindivRepository;
 import com.cht.procurementManagement.repositories.RequestRepository;
@@ -105,7 +102,7 @@ public class SuppliesServiceImpl implements SuppliesService {
 
     //create request
     @Override
-    public RequestDto createRequestBySupplies(RequestDto requestDto, MultipartFile file) throws IOException {
+    public RequestDto createRequestBySupplies(RequestDto requestDto, MultipartFile file) {
 
         //1. check for sub divs list
         if(requestDto.getSubdivIdList() != null && !requestDto.getSubdivIdList().isEmpty()) {
@@ -169,7 +166,7 @@ public class SuppliesServiceImpl implements SuppliesService {
 
     //update (replace)
     @Override
-    public PDFAttachment uploadRequestAttachment(MultipartFile file, Long requestId) throws IOException{
+    public PDFAttachment uploadRequestAttachment(MultipartFile file, Long requestId){
         validateRequestForUpdateDeleteForSuppliesUser(requestId);
 
         //remove if there is an existing attachment for the request
@@ -182,7 +179,7 @@ public class SuppliesServiceImpl implements SuppliesService {
 
     //delete request attachment
     @Override
-    public void deleteRequestAttachment(Long fileId) throws IOException{
+    public void deleteRequestAttachment(Long fileId){
         //find requestId
         PDFAttachment attachment = attachmentService.getAttachmentById(fileId);
         EntityType type = attachment.getReferenceType();
@@ -233,11 +230,7 @@ public class SuppliesServiceImpl implements SuppliesService {
         Request existingRequest = validateRequestForUpdateDeleteForSuppliesUser(requestId);
 
         //delete related attachment
-        try {
-            attachmentService.deleteAllAttachmentsOfAnEntity(requestId, EntityType.REQUEST);
-        } catch (IOException e) {
-            throw new RuntimeException("Attachment Files are not found");
-        }
+        attachmentService.deleteAllAttachmentsOfAnEntity(requestId, EntityType.REQUEST);
 
         //delete request
         requestService.deleteRequest(existingRequest);
@@ -274,7 +267,7 @@ public class SuppliesServiceImpl implements SuppliesService {
     }
 
     @Override
-    public ApprovalDto approveRequestBySupplies(Long requestId, ApprovalDto approvalDto) {
+    public ApprovalDto approveRequestBySupplies(Long requestId, ApprovalDto approvalDto, MultipartFile file){
 
         //1. find the request object to approve
         Request existingRequest = requestRepository.findById(requestId)
@@ -297,7 +290,14 @@ public class SuppliesServiceImpl implements SuppliesService {
         approvalDto.setRequestId(requestId);
 
         //6.create new approval object through Approval service
-        return approvalService.createApproval(approvalDto);
+        ApprovalDto savedApprovalDto =  approvalService.createApproval(approvalDto);
+
+        //7. save the file
+        if(!file.isEmpty()) {
+            attachmentService.uploadFile(file, "Approval Document", savedApprovalDto.getId(), EntityType.APPROVAL);
+        }
+
+        return savedApprovalDto;
 
     }
 

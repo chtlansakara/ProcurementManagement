@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.List;
@@ -224,15 +225,24 @@ public class SubdivUserController {
     }
 
     //create request for sub-div
-    @PostMapping("/requests")
-    public ResponseEntity<?> createRequestForSubdiv(@RequestBody RequestDto requestDto){
+    @PostMapping(value = "/requests", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> createRequestForSubdiv(@RequestPart("request") RequestDto requestDto,
+                                                    @RequestPart(value ="file", required = false) MultipartFile file){
         //save to db
-        RequestDto createdRequestDto = subDivService.createRequestBySubdiv(requestDto);
+        RequestDto createdRequestDto = subDivService.createRequestBySubdiv(requestDto, file);
         if(createdRequestDto == null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request couldn't be created");
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRequestDto);
     }
+//    public ResponseEntity<?> createRequestForSubdiv(@RequestBody RequestDto requestDto){
+//        //save to db
+//        RequestDto createdRequestDto = subDivService.createRequestBySubdiv(requestDto);
+//        if(createdRequestDto == null){
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request couldn't be created");
+//        }
+//        return ResponseEntity.status(HttpStatus.CREATED).body(createdRequestDto);
+//    }
 
     //get request by id
     @GetMapping("/requests/{id}")

@@ -3,26 +3,30 @@ package com.cht.procurementManagement.services.subdiv;
 import com.cht.procurementManagement.dto.*;
 import com.cht.procurementManagement.dto.procurement.ProcurementReportDTO;
 import com.cht.procurementManagement.dto.procurement.ProcurementResponseDto;
-import com.cht.procurementManagement.entities.Procurement;
-import com.cht.procurementManagement.entities.Request;
-import com.cht.procurementManagement.entities.Subdiv;
+import com.cht.procurementManagement.entities.*;
+import com.cht.procurementManagement.enums.EntityType;
 import com.cht.procurementManagement.enums.RequestStatus;
 import com.cht.procurementManagement.enums.UserRole;
 import com.cht.procurementManagement.mappers.ProcurementMapper;
 import com.cht.procurementManagement.repositories.*;
 import com.cht.procurementManagement.services.Approval.ApprovalService;
 import com.cht.procurementManagement.services.Comment.CommentService;
+import com.cht.procurementManagement.services.attachment.AttachmentService;
 import com.cht.procurementManagement.services.auth.AuthService;
 import com.cht.procurementManagement.services.notification.NotificationService;
 import com.cht.procurementManagement.services.requests.RequestService;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 @Service
 public class SubDivServiceImpl implements SubDivService {
@@ -36,7 +40,9 @@ public class SubDivServiceImpl implements SubDivService {
     private final RequestService requestService;
     private final CommentService commentService;
     private final ApprovalService approvalService;
+    private final AttachmentService attachmentService;
     private final AdmindivRepository admindivRepository;
+    private final ApprovalRepository approvalRepository;
     private final ProcurementMapper procurementMapper;
     private final ProcurementRepository procurementRepository;
     private final NotificationService notificationService;
@@ -47,7 +53,9 @@ public class SubDivServiceImpl implements SubDivService {
                              RequestService requestService,
                              CommentService commentService,
                              ApprovalService approvalService,
+                             AttachmentService attachmentService,
                              AdmindivRepository admindivRepository,
+                             ApprovalRepository approvalRepository,
                              ProcurementMapper procurementMapper,
                              ProcurementRepository procurementRepository,
                              NotificationService notificationService) {
@@ -58,7 +66,9 @@ public class SubDivServiceImpl implements SubDivService {
         this.requestService = requestService;
         this.commentService = commentService;
         this.approvalService = approvalService;
+        this.attachmentService = attachmentService;
         this.admindivRepository = admindivRepository;
+        this.approvalRepository = approvalRepository;
         this.procurementMapper = procurementMapper;
         this.procurementRepository = procurementRepository;
         this.notificationService = notificationService;
@@ -97,7 +107,7 @@ public class SubDivServiceImpl implements SubDivService {
 
     @Transactional
     @Override
-    public RequestDto createRequestBySubdiv(RequestDto requestDto) {
+    public RequestDto createRequestBySubdiv(RequestDto requestDto, MultipartFile file) {
         //sub div of the user & the status is set here
 
         //getting user's sub-div details from logged details - using class method
@@ -110,7 +120,15 @@ public class SubDivServiceImpl implements SubDivService {
         requestDto.setStatus(RequestStatus.PENDING_ADMIN_APPROVAL);
 
         //create request through request service - sets the user createdBy and created Date
-        return requestService.createRequest(requestDto);
+        RequestDto createdRequestDto = requestService.createRequest(requestDto);
+
+        //5. save the file
+        if(!file.isEmpty()) {
+            attachmentService.uploadFile(file, "Request approval", createdRequestDto.getId(), EntityType.REQUEST);
+        }
+
+        return createdRequestDto;
+
     }
 
     //get request by id
@@ -120,6 +138,87 @@ public class SubDivServiceImpl implements SubDivService {
         return validateAsSubdivRequest(id).getRequestDto();
     }
 
+    @Override
+    public Optional<PDFAttachment> getSubdivRequestAttachment(Long requestId){
+        //validate as subdiv request
+        validateAsSubdivRequest(requestId);
+        //find attachment if exists
+        return attachmentService.getAttachment(requestId, EntityType.REQUEST);
+    }
+
+    @Override
+    public Optional<PDFAttachment> getSubdivApprovalAttachment(Long approvalId){
+        //find the request of the approval
+        Optional<Approval> existingApprovalDto = approvalRepository.findById(approvalId);
+
+        if (existingApprovalDto.isPresent()) {
+            Long requestId = existingApprovalDto.get().getRequest().getId();
+
+            //validate as sub div request first
+            validateAsSubdivRequest(requestId);
+
+            //find the attachment if exists
+            return attachmentService.getAttachment(approvalId, EntityType.APPROVAL);
+        }
+
+        return Optional.empty();
+    }
+
+    @Override
+    public Resource downloadSubdivAttachment(Long fileId){
+        PDFAttachment existingAttachment = attachmentService.getAttachmentById(fileId);
+
+        //check for relevance
+        if(existingAttachment.getReferenceType().equals(EntityType.PROCUREMENT)){
+            throw new RuntimeException("Access denied for procurement documents.");
+
+        }else if(existingAttachment.getReferenceType().equals(EntityType.APPROVAL)){
+
+            Approval existingApproval = approvalRepository.findById(existingAttachment.getReferenceId())
+                    .orElseThrow(() -> new RuntimeException("Approval not found."));
+            Long requestId = existingApproval.getRequest().getId();
+            //validate for admin div
+            validateAsSubdivRequest(requestId);
+        }else{
+            //for Entity Type REQUEST
+            Long requestId = existingAttachment.getReferenceId();
+            //validate for admin div
+            validateAsSubdivRequest(requestId);
+        }
+
+        //return attachment
+        try {
+            return attachmentService.getFileResource(fileId);
+        } catch (IOException e) {
+            throw new RuntimeException("File not found");
+        }
+    }
+
+    @Override
+   public PDFAttachment uploadRequestAttachment(MultipartFile file, Long requestId){
+       validateAsSubdivRequest(requestId);
+
+       //remove if there is an existing attachment for the request
+       attachmentService.getAttachment(requestId, EntityType.REQUEST).ifPresent(existing ->{
+           throw new RuntimeException("Delete existing file attachment first");
+       });
+
+       return attachmentService.uploadFile(file, "Request approval", requestId,  EntityType.REQUEST);
+   }
+
+    @Override
+    public void deleteRequestAttachment(Long fileId){
+        //find requestId
+        PDFAttachment attachment = attachmentService.getAttachmentById(fileId);
+        EntityType type = attachment.getReferenceType();
+        Long referenceId = attachment.getReferenceId();
+        if(type.equals(EntityType.REQUEST)) {
+            validateAsSubdivRequest(referenceId);
+            attachmentService.deleteAttachment(fileId);
+        }else{
+            throw new RuntimeException("File is not a request attachment");
+        }
+    }
     @Override
     public void deleteRequestById(Long id) {
         //1. Check authorization for the request for sub-div user - using class method
