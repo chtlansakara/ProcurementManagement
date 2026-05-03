@@ -4,7 +4,11 @@ import com.cht.procurementManagement.dto.*;
 import com.cht.procurementManagement.dto.procurement.ProcurementCreateDto;
 import com.cht.procurementManagement.dto.procurement.ProcurementResponseDto;
 import com.cht.procurementManagement.dto.procurement.ProcurementStatusUpdateDto;
+import com.cht.procurementManagement.entities.PDFAttachment;
+import com.cht.procurementManagement.enums.EntityType;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface ProcurementService {
@@ -39,6 +43,12 @@ public interface ProcurementService {
 
     //update procurement
     ProcurementResponseDto updateProcurement(Long id, ProcurementCreateDto createDto);
+
+    //upload procurement attachment
+    PDFAttachment uploadProcurementAttachment(MultipartFile file, String name, Long procurementId) throws IOException;
+
+    //delete procurement attachment
+    void deleteProcurementAttachment(Long fileId) throws IOException;
 
     //get requests that can be chosen when updating a procurement
     List<RequestDto> getRequestsForUpdateProcurement();

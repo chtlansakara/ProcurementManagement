@@ -8,13 +8,16 @@ import com.cht.procurementManagement.entities.*;
 import com.cht.procurementManagement.enums.*;
 import com.cht.procurementManagement.mappers.ProcurementMapper;
 import com.cht.procurementManagement.repositories.*;
+import com.cht.procurementManagement.services.attachment.AttachmentService;
 import com.cht.procurementManagement.services.auth.AuthService;
 import com.cht.procurementManagement.services.notification.NotificationService;
 import com.cht.procurementManagement.utils.AuditService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 @Service
@@ -32,6 +35,8 @@ public class ProcurementServiceImpl implements ProcurementService{
     private final ProcurementSourceRepository procurementSourceRepository;
     private final NotificationService notificationService;
 
+    private final AttachmentService attachmentService;
+
 
     public ProcurementServiceImpl(ProcurementMapper procurementMapper,
                                   UserRepository userRepository,
@@ -42,7 +47,7 @@ public class ProcurementServiceImpl implements ProcurementService{
                                   ProcurementRepository procurementRepository,
                                   AuditService auditService,
                                   ProcurementStatusUpdateRepository procurementStatusUpdateRepository,
-                                  ProcurementSourceRepository procurementSourceRepository, NotificationService notificationService) {
+                                  ProcurementSourceRepository procurementSourceRepository, NotificationService notificationService, AttachmentService attachmentService) {
         this.procurementMapper = procurementMapper;
         this.userRepository = userRepository;
         this.procurementStatusRepository = procurementStatusRepository;
@@ -54,6 +59,7 @@ public class ProcurementServiceImpl implements ProcurementService{
         this.procurementStatusUpdateRepository = procurementStatusUpdateRepository;
         this.procurementSourceRepository = procurementSourceRepository;
         this.notificationService = notificationService;
+        this.attachmentService = attachmentService;
     }
 
     @Override
@@ -578,6 +584,13 @@ public class ProcurementServiceImpl implements ProcurementService{
         //delete related notifications
         notificationService.deleteNotifications(AuditEntityType.PROCUREMENT, id);
 
+        //delete related procurement attachments
+        try {
+            attachmentService.deleteAllAttachmentsOfAnEntity(id, EntityType.PROCUREMENT);
+        } catch (IOException e) {
+            throw new RuntimeException("Attachment Files are not found");
+        }
+
         //delete procurement
         procurementRepository.deleteById(id);
 
@@ -590,6 +603,27 @@ public class ProcurementServiceImpl implements ProcurementService{
                 auditDetails.toString()
         );
     }
+
+    @Override
+    public PDFAttachment uploadProcurementAttachment(MultipartFile file, String name, Long procurementId) throws IOException{
+        validateToUpdateDeleteProcurement(procurementId);
+        return attachmentService.uploadFile(file, name, procurementId, EntityType.PROCUREMENT);
+    }
+
+    @Override
+    public void deleteProcurementAttachment(Long fileId) throws IOException {
+        //find procurementId
+        PDFAttachment attachment = attachmentService.getAttachmentById(fileId);
+        EntityType type = attachment.getReferenceType();
+        Long referenceId = attachment.getReferenceId();
+        if(type.equals(EntityType.PROCUREMENT)) {
+            validateToUpdateDeleteProcurement(referenceId);
+            attachmentService.deleteAttachment(fileId);
+        }else{
+            throw new RuntimeException("File is not a procurement attachment");
+        }
+    }
+
 
 //class methods
 
@@ -608,9 +642,18 @@ public class ProcurementServiceImpl implements ProcurementService{
         //should be the one created procurement or assigned
         Long loggedUserId = authService.getLoggedUserDto().getId();
         //since assigned user could be null
+//        Long assignedUserId = existingProcurement.getAssignedTo()!= null ? existingProcurement.getAssignedTo().getId() : null;
+//        Long createdUserId = existingProcurement.getCreatedBy().getId();
+//        if(!loggedUserId.equals(assignedUserId) && !loggedUserId.equals(createdUserId)){
+//            throw new RuntimeException("The procurement is not allowed to be updated by this user!");
+//        }
+
+        //making strict-only the assigned user can update
         Long assignedUserId = existingProcurement.getAssignedTo()!= null ? existingProcurement.getAssignedTo().getId() : null;
-        Long createdUserId = existingProcurement.getCreatedBy().getId();
-        if(!loggedUserId.equals(assignedUserId) && !loggedUserId.equals(createdUserId)){
+        if(assignedUserId == null){
+            throw new RuntimeException("There is no assigned user to update this procurement");
+        }
+        if(!loggedUserId.equals(assignedUserId)){
             throw new RuntimeException("The procurement is not allowed to be updated by this user!");
         }
 

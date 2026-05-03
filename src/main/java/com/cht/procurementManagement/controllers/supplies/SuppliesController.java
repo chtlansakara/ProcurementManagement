@@ -4,9 +4,12 @@ import com.cht.procurementManagement.dto.*;
 import com.cht.procurementManagement.services.requests.RequestService;
 import com.cht.procurementManagement.services.supplies.SuppliesService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -74,14 +77,28 @@ public class SuppliesController {
 
 
     //create request by supplies
-    @PostMapping("/requests")
-    public ResponseEntity<?> createRequest(@RequestBody RequestDto requestDto){
-        RequestDto createdRequestDto = suppliesService.createRequestBySupplies(requestDto);
+    @PostMapping(value = "/requests", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> createRequest(@RequestPart("request") RequestDto requestDto,
+                                           @RequestPart(value ="file", required = false) MultipartFile file){
+        RequestDto createdRequestDto = null;
+        try {
+            createdRequestDto = suppliesService.createRequestBySupplies(requestDto , file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         if(createdRequestDto == null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request couldn't be created.");
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(createdRequestDto);
     }
+//    @PostMapping("/requests")
+//    public ResponseEntity<?> createRequest(@RequestBody RequestDto requestDto){
+//        RequestDto createdRequestDto = suppliesService.createRequestBySupplies(requestDto);
+//        if(createdRequestDto == null){
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request couldn't be created.");
+//        }
+//        return ResponseEntity.status(HttpStatus.CREATED).body(createdRequestDto);
+//    }
 
     //reject requests
     @PostMapping("/requests/reject/{id}")

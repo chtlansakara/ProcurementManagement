@@ -1,7 +1,10 @@
 package com.cht.procurementManagement.services.supplies;
 
 import com.cht.procurementManagement.dto.*;
+import com.cht.procurementManagement.entities.PDFAttachment;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface SuppliesService {
@@ -16,9 +19,15 @@ public interface SuppliesService {
 
     RequestDto getRequestById(Long requestId);
 
-    RequestDto createRequestBySupplies(RequestDto requestDto);
+    RequestDto createRequestBySupplies(RequestDto requestDto, MultipartFile file) throws IOException;
 
     RequestDto updateRequest(Long requestId, RequestDto requestDto);
+
+    //update request attachment
+    PDFAttachment uploadRequestAttachment(MultipartFile file, Long requestId) throws IOException;
+
+    //delete request attachment
+    void deleteRequestAttachment(Long fileId) throws IOException;
 
     void deleteRequest(Long requestId);
 
